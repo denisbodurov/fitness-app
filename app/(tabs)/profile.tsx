@@ -1,17 +1,13 @@
-import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { useTheme } from 'react-native-paper';
 
-
-export default function TabOneScreen() {
-  const theme = useTheme()
-
+export default function ProfileScreen() {
   return (
-    <View style={{...styles.container, backgroundColor: theme.colors.background}}>
+    <View style={styles.container}>
 
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
