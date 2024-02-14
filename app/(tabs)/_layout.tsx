@@ -1,23 +1,79 @@
-import React from 'react';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Link, Tabs } from 'expo-router';
-import { Pressable } from 'react-native';
+import React from "react";
+import { withLayoutContext } from "expo-router";
+import {
+  MaterialBottomTabNavigationEventMap,
+  MaterialBottomTabNavigationOptions,
+  createMaterialBottomTabNavigator,
+} from "react-native-paper/react-navigation";
+import { ParamListBase, TabNavigationState } from "@react-navigation/native";
+import { Surface, useTheme } from "react-native-paper";
 
-// You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>['name'];
-  color: string;
-}) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
-}
+import Icon from "@/components/Icon";
+import { StyleSheet } from "react-native";
+
+const { Navigator } = createMaterialBottomTabNavigator();
+
+export const Tabs = withLayoutContext<
+  MaterialBottomTabNavigationOptions,
+  typeof Navigator,
+  TabNavigationState<ParamListBase>,
+  MaterialBottomTabNavigationEventMap
+>(Navigator);
 
 export default function TabLayout() {
-  
+  const theme = useTheme();
 
   return (
     <Tabs
-      screenOptions={{
-      }}>
+      shifting={true}
+      inactiveColor={theme.colors.outline}
+      activeColor={theme.colors.primary}
+      barStyle={{...style.navigator, backgroundColor: theme.colors.surface}}
+      
+    >
+      <Tabs.Screen
+        name="index"
+        options={{
+          
+          title: "Home",
+          tabBarIcon: ({ color }) => (
+            <Icon library="FontAwesome6" color={color} name="house-chimney" size={24}/>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="devices"
+        options={{
+          title: "Devices",
+          tabBarIcon: ({ color }) => (
+            <Icon library="Ionicons" color={color} name="watch" size={24}/>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="workout"
+        options={{
+          title: "Workout",
+          tabBarIcon: ({ color }) => (
+            <Icon library="FontAwesome5" color={color} name="running" size={24}/>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ color }) => (
+            <Icon library="FontAwesome" color={color} name="user" size={24}/>
+          ),
+        }}
+      />
     </Tabs>
   );
 }
+
+const style = StyleSheet.create({
+  navigator: {
+    height: 70,
+  },
+});
