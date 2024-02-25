@@ -1,20 +1,28 @@
-import { Appbar } from "react-native-paper";
-import { StyleSheet } from "react-native";
+import { Appbar, Searchbar } from "react-native-paper";
+import { StyleSheet, View } from "react-native";
+import { useState } from "react";
+import { HeaderType } from "@/types/components/Header";
 
-function Header () {
+function Header ({theme} : HeaderType) {
+  const [searchQuery, setSearchQuery] = useState('');
+
   return (
-    <Appbar.Header style={style.mainContainer}>
-        <Appbar.BackAction onPress={() => console.log("Going back...")}/>
-        <Appbar.Content title="Home"/>
-        <Appbar.Action icon="cog" onPress={() => console.log("Settings...")}/>
-    </Appbar.Header>
+    <View style={{...style.mainContainer, backgroundColor: theme.colors.surface}}>
+        <Searchbar
+          placeholder="Search"
+          onChangeText={setSearchQuery}
+          value={searchQuery}
+        />
+    </View>
   )
 }
 
 const style = StyleSheet.create({
     mainContainer: {
-        top: 0,
-        left: 0
+        width: "100%",
+        alignItems: "center",
+        justifyContent: "space-around",
+        padding: 10
     }
 })
 

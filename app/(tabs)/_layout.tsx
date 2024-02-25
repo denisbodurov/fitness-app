@@ -42,20 +42,20 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="devices"
+        name="workouts"
         options={{
-          title: "Devices",
+          title: "Workouts",
           tabBarIcon: ({ color }) => (
-            <Icon library="Ionicons" color={color} name="watch" size={24}/>
+            <Icon library="MaterialCommunityIcons" color={color} name="dumbbell" size={24}/>
           ),
         }}
       />
       <Tabs.Screen
-        name="workout"
+        name="report"
         options={{
-          title: "Workout",
+          title: "Report",
           tabBarIcon: ({ color }) => (
-            <Icon library="FontAwesome5" color={color} name="running" size={24}/>
+            <Icon library="Ionicons" color={color} name="stats-chart" size={24}/>
           ),
         }}
       />

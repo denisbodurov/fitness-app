@@ -1,9 +1,9 @@
 import React from "react";
 import { withLayoutContext } from "expo-router";
-import { useTheme } from "react-native-paper";
+import { useTheme, Text } from "react-native-paper";
 
 import Icon from "@/components/Icon";
-import { StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 import { ParamListBase, TabNavigationState } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -40,9 +40,9 @@ export default function TabsLayout() {
           height: 3
         }
       }}>
-        <Tabs.Screen name="index" options={{ title: "Walk" }} />
-        <Tabs.Screen name="run" options={{ title: "Run" }} />
-        <Tabs.Screen name="bike" options={{ title: "Bike" }} />
+        <Tabs.Screen name="index" options={{ title: "1 DAY" }} />
+        <Tabs.Screen name="run" options={{ title: "7 DAYS" }} />
+        <Tabs.Screen name="bike" options={{ title: "30 DAYS" }} />
       </Tabs>
     </SafeAreaView>
   );
