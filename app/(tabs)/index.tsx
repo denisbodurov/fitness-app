@@ -8,14 +8,25 @@ import DataBlock from "@/components/DataBlock";
 import WorkoutList from "@/components/WorkoutList";
 import Schedule from "@/components/Schedule";
 import { ScheduleDataType } from "@/types/components/Schedule";
-import { WorkoutType } from "@/types/components/Workout";
+import defaultSchedule from "@/constants/defaultSchedule";
+
 
 export default function HomeScreen() {
-  const [schedule, setSchedule] = useState<ScheduleDataType>();
-  const [defaultWorkouts, setDefaultWorkouts] = useState<WorkoutType>();
-  // const [dailyProgress, setDailyProgress] = useState<>();
+  const [schedule, setSchedule] = useState<ScheduleDataType>(defaultSchedule);
+  const [defaultWorkouts, setDefaultWorkouts] = useState('');
+  const [dailyProgress, setDailyProgress] = useState();
 
   const theme = useTheme();
+
+
+  useEffect(() => {
+    try {
+      //Try to fetch data
+    } catch {
+      //Catch thrown errors and set default data
+      setSchedule(defaultSchedule)
+    }
+  }, [])
 
   return (
     <SafeAreaView style={style.safeArea}>
@@ -49,7 +60,7 @@ export default function HomeScreen() {
               SCHEDULE
             </Text>
           </View>
-          {/* <Schedule scheduleData={schedule} theme={theme}/> */}
+          <Schedule scheduleData={schedule} theme={theme}/>
         </View>
         <View style={style.section}>
           <View style={style.sectionTitleContainer}>

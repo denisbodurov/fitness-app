@@ -5,10 +5,11 @@ import Icon from "./Icon";
 import { Link } from "expo-router";
 import { DayType, ScheduleType } from "@/types/components/Schedule";
 
-export default function Schedule({scheduleData, theme } : ScheduleType) {
-
+export default function Schedule({ scheduleData, theme }: ScheduleType) {
   return (
-    <View style={{...style.mainContainer, backgroundColor: theme.colors.surface}}>
+    <View
+      style={{ ...style.mainContainer, backgroundColor: theme.colors.surface }}
+    >
       <View style={style.headerContainer}>
         <Text variant="titleMedium" style={style.title}>
           MY WEEK
@@ -37,11 +38,31 @@ export default function Schedule({scheduleData, theme } : ScheduleType) {
 
 export function Day({ day, rest, theme }: DayType) {
   return (
-    <View style={{...style.dayContainer, backgroundColor: theme.colors.surface}}>
+    <View
+      style={{ ...style.dayContainer, backgroundColor: theme.colors.surface }}
+    >
       <Text variant="titleSmall" style={style.dayTitle}>
         {day}
       </Text>
-      <View style={{...style.indicator, borderColor: theme.colors.primary}} />
+
+      {rest && (
+        <View
+          style={{
+            ...style.indicator,
+            borderColor: theme.colors.primary,
+            backgroundColor: theme.colors.primary,
+          }}
+        >
+          <Icon library="MaterialCommunityIcons" name="arm-flex" color={theme.colors.surface} size={16}/>
+        </View>
+      )}
+      {!rest && (
+        <View
+          style={{ ...style.indicator, borderColor: theme.colors.primary }}
+        >
+          <Icon library="MaterialCommunityIcons" name="sleep" color={theme.colors.primary} size={16}/>
+        </View>
+      )}
     </View>
   );
 }
@@ -84,6 +105,8 @@ const style = StyleSheet.create({
   indicator: {
     width: 25,
     height: 25,
+    justifyContent: "center",
+    alignItems: "center",
     borderRadius: 50,
     borderWidth: 2,
   },

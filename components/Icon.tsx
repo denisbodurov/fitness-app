@@ -23,7 +23,7 @@ function Icon({ name, color, size = 28, library }: IconProps) {
     Feather,
   }[library];
 
-  return <IconComponent size={size} name={name} color={color} />;
+  return <IconComponent size={size} name={name} color={color}/>;
 }
 
 export default Icon;

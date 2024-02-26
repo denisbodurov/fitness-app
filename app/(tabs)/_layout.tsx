@@ -6,7 +6,7 @@ import {
   createMaterialBottomTabNavigator,
 } from "react-native-paper/react-navigation";
 import { ParamListBase, TabNavigationState } from "@react-navigation/native";
-import { Surface, useTheme } from "react-native-paper";
+import { useTheme } from "react-native-paper";
 
 import Icon from "@/components/Icon";
 import { StyleSheet } from "react-native";
@@ -29,7 +29,7 @@ export default function TabLayout() {
       inactiveColor={theme.colors.outline}
       activeColor={theme.colors.primary}
       barStyle={{...style.navigator, backgroundColor: theme.colors.surface}}
-      
+
     >
       <Tabs.Screen
         name="index"
