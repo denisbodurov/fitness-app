@@ -1,5 +1,5 @@
 import { Searchbar } from "react-native-paper";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { useState } from "react";
 import { HeaderType } from "@/types/components/Header";
 import { Link } from "expo-router";
@@ -18,12 +18,14 @@ function Header({ theme }: HeaderType) {
         elevation={2}
       />
       <Link href="/(tabs)/profile">
-        <Icon
-          library="Feather"
-          name="plus-circle"
-          size={30}
-          color={theme.colors.primary}
-        />
+        <TouchableOpacity>
+          <Icon
+            library="Feather"
+            name="plus-circle"
+            size={30}
+            color={theme.colors.primary}
+          />
+        </TouchableOpacity>
       </Link>
     </View>
   );

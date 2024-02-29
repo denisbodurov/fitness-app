@@ -1,3 +1,4 @@
+import CustomPlan from '@/components/CustomPlan';
 import Header from '@/components/Header';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useTheme } from 'react-native-paper';
@@ -10,7 +11,7 @@ export default function WorkoutsScreen() {
     <SafeAreaView style={styles.safeArea}>
       <Header theme={theme}/>
       <ScrollView>
-        
+        <CustomPlan id={1} title="Test title" information = "15 minutes" difficulty={3} theme={theme}/>
       </ScrollView>
     </SafeAreaView>
   );

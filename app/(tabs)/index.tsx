@@ -29,8 +29,11 @@ export default function HomeScreen() {
   }, [])
 
   return (
+    //Wrapping the home screen in safe area view
     <SafeAreaView style={style.safeArea}>
+      {/* ScrollView that contains all of the home screen elements */}
       <ScrollView contentContainerStyle={{...style.body, backgroundColor: theme.colors.background}}>
+        {/* Data container providing information about the user's daily progress */}
         <View style={style.section}>
           <View style={style.sectionTitleContainer}>
             <Icon
@@ -49,6 +52,7 @@ export default function HomeScreen() {
             <DataBlock value={72} suffix={"MINUTES"} theme={theme} />
           </View>
         </View>
+        {/* Data container that provides info about the user's weekly workout schedule */}
         <View style={style.section}>
           <View style={style.sectionTitleContainer}>
             <Icon
@@ -62,6 +66,7 @@ export default function HomeScreen() {
           </View>
           <Schedule scheduleData={schedule} theme={theme}/>
         </View>
+        {/* Three separate sections with workouts of 3 different difficulty levels */}
         <View style={style.section}>
           <View style={style.sectionTitleContainer}>
             <Text style={style.sectionTitle} variant="headlineSmall">

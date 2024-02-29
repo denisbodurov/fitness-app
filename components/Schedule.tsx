@@ -1,5 +1,5 @@
-import { StyleSheet, View } from "react-native";
-import { Text, useTheme } from "react-native-paper";
+import { Pressable, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Text } from "react-native-paper";
 import React from "react";
 import Icon from "./Icon";
 import { Link } from "expo-router";
@@ -15,12 +15,14 @@ export default function Schedule({ scheduleData, theme }: ScheduleType) {
           MY WEEK
         </Text>
         <Link href="/(tabs)/profile">
-          <Icon
-            library="FontAwesome"
-            name="edit"
-            size={20}
-            color={theme.colors.primary}
-          />
+          <TouchableOpacity>
+            <Icon
+              library="FontAwesome"
+              name="edit"
+              size={20}
+              color={theme.colors.primary}
+            />
+          </TouchableOpacity>
         </Link>
       </View>
       <View style={style.contentContainer}>
