@@ -7,16 +7,41 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import DataBlock from "@/components/DataBlock";
 import WorkoutList from "@/components/WorkoutList";
 import Schedule from "@/components/Schedule";
-import { ScheduleDataType } from "@/types/components/Schedule";
+import { ScheduleData } from "@/types/components/Schedule";
 import defaultSchedule from "@/constants/defaultSchedule";
 
 
 export default function HomeScreen() {
-  const [schedule, setSchedule] = useState<ScheduleDataType>(defaultSchedule);
+  const [schedule, setSchedule] = useState<ScheduleData>(defaultSchedule);
   const [defaultWorkouts, setDefaultWorkouts] = useState('');
   const [dailyProgress, setDailyProgress] = useState();
 
   const theme = useTheme();
+
+  const mockData = [
+    {
+      bannerURL: "test.com",
+      title: "ARMS WORKOUT",
+      information: "16 EXERCISES - 12 MINUTES",
+      difficulty: 1,
+      id: 1,
+    },
+    {
+      bannerURL: "test.com",
+      title: "LEGS WORKOUT",
+      information: "6 EXERCISES - 9 MINUTES",
+      difficulty: 2,
+      id: 2,
+    },
+    {
+      bannerURL: "test.com",
+      title: "ABS WORKOUT",
+      information: "12 EXERCISES - 11 MINUTES",
+      difficulty: 3,
+      id: 3,
+    },
+
+  ];
 
 
   useEffect(() => {
@@ -73,7 +98,7 @@ export default function HomeScreen() {
               BEGINNER
             </Text>
           </View>
-          <WorkoutList />
+          <WorkoutList data={mockData} theme={theme}/>
         </View>
         <View style={style.section}>
           <View style={style.sectionTitleContainer}>

@@ -1,8 +1,26 @@
-export type WorkoutType = {
+import { MD3Theme } from "react-native-paper";
+
+export interface WorkoutData {
   id: number;
   title: string;
   information: string;
-  difficulty: 1 | 2 | 3;
+  difficulty: number;
   bannerURL: string;
-  height?: number;
+}
+
+export interface WorkoutProps {
+  id: number;
+  title: string;
+  information: string;
+  difficulty: number;
+  bannerURL: string;
+  containerHeight?: number;
+  theme: MD3Theme
 };
+
+
+
+export interface WorkoutListProps {
+  data: WorkoutData[];
+  theme: MD3Theme;
+}

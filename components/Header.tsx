@@ -17,7 +17,7 @@ function Header({ theme }: HeaderType) {
         value={searchQuery}
         elevation={2}
       />
-      <Link href="/(tabs)/profile">
+      <Link asChild href="/(tabs)/profile">
         <TouchableOpacity>
           <Icon
             library="Feather"

@@ -1,9 +1,9 @@
 import { View, StyleSheet } from "react-native";
 import { Text } from "react-native-paper";
 import React from "react";
-import { DataBlockType } from "@/types/components/DataBlock";
+import { DataBlockProps } from "@/types/components/DataBlock";
 
-function DataBlock({ value, suffix, theme }: DataBlockType) {
+function DataBlock({ value, suffix, theme }: DataBlockProps) {
   const styles = StyleSheet.create({
     container: {
       flexDirection: "column",

@@ -1,6 +1,6 @@
 import { MD3Theme } from "react-native-paper";
 
-export interface ScheduleDataType {
+export interface ScheduleData {
   monday: {
     rest: boolean;
   };
@@ -24,12 +24,12 @@ export interface ScheduleDataType {
   };
 }
 
-export interface ScheduleType {
-  scheduleData: ScheduleDataType;
+export interface ScheduleProps {
+  scheduleData: ScheduleData;
   theme: MD3Theme;
 }
 
-export interface DayType {
+export interface DayProps {
   day: string;
   rest: boolean;
   theme: MD3Theme;

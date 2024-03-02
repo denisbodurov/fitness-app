@@ -1,42 +1,20 @@
 import { StyleSheet, View } from "react-native";
 import React from "react";
-import DefaultWorkout from "./Workout";
+import Workout from "./Workout";
+import { WorkoutListProps } from "@/types/components/Workout";
 
-export default function WorkoutList() {
-  const mockData = [
-    {
-      bannerURL: "test.com",
-      title: "ARMS WORKOUT",
-      infromation: "16 EXERCISES - 12 MINUTES",
-      difficulty: 1,
-      id: 1,
-    },
-    {
-      bannerURL: "test.com",
-      title: "LEGS WORKOUT",
-      infromation: "6 EXERCISES - 9 MINUTES",
-      difficulty: 2,
-      id: 2,
-    },
-    {
-      bannerURL: "test.com",
-      title: "ABS WORKOUT",
-      infromation: "12 EXERCISES - 11 MINUTES",
-      difficulty: 3,
-      id: 3,
-    },
+export default function WorkoutList({data, theme} : WorkoutListProps) {
 
-  ];
-
-  const workouts = mockData.map((workout) => {
+  const workouts = data.map((workout) => {
     return (
-      <DefaultWorkout
+      <Workout
         key={workout.id}
         id={workout.id}
         bannerURL={workout.bannerURL}
         title={workout.title}
-        information={workout.infromation}
+        information={workout.information}
         difficulty={workout.difficulty}
+        theme={theme}
       />
     );
   });

@@ -4,58 +4,21 @@ import React from "react";
 import Icon from "./Icon";
 import { Link } from "expo-router";
 import { Image } from "expo-image";
-import { WorkoutType } from "@/types/components/Workout";
+import { WorkoutProps } from "@/types/components/Workout";
 
 export default function Workout({
+  id,
   bannerURL,
   title,
   information,
   difficulty,
-  id,
-  height = 150
-}: WorkoutType) {
+  containerHeight = 150
+}: WorkoutProps) {
   
-  const style = StyleSheet.create({
-    container: {
-      position: "relative",
-      width: "100%",
-      height: height,
-      flexDirection: "column",
-      alignItems: "flex-start",
-      gap: 10,
-      borderRadius: 20,
-      elevation: 5,
-      overflow: "hidden",
-      backgroundColor: "brown",
-    },
-    difficultyContainer: {
-      flexDirection: "row",
-      padding: 10,
-      zIndex: 9999
-    },
-    titleContainer: {
-      flex: 1,
-      flexDirection: "column",
-      justifyContent: "center",
-      alignItems: "flex-start",
-      paddingLeft: 15
-    },
-    title: {
-      fontFamily: "ProtestStrike",
-    },
-    information: {
-      fontFamily: "LatoBold",
-    },
-    image: {
-      position: "absolute",
-      width: "100%",
-      height: "100%",
-      resizeMode: "cover",
-    },
-  });
+
 
   return (
-    <View style={style.container}>
+    <View style={{...style.container, height: containerHeight}}>
       <View style={style.difficultyContainer}>
         <Icon
           library="MaterialCommunityIcons"
@@ -94,3 +57,41 @@ export default function Workout({
     </View>
   );
 }
+
+const style = StyleSheet.create({
+  container: {
+    position: "relative",
+    width: "100%",
+    flexDirection: "column",
+    alignItems: "flex-start",
+    gap: 10,
+    borderRadius: 20,
+    elevation: 5,
+    overflow: "hidden",
+    backgroundColor: "brown",
+  },
+  difficultyContainer: {
+    flexDirection: "row",
+    padding: 10,
+    zIndex: 9999
+  },
+  titleContainer: {
+    flex: 1,
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "flex-start",
+    paddingLeft: 15
+  },
+  title: {
+    fontFamily: "ProtestStrike",
+  },
+  information: {
+    fontFamily: "LatoBold",
+  },
+  image: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+});

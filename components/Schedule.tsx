@@ -3,9 +3,9 @@ import { Text } from "react-native-paper";
 import React from "react";
 import Icon from "./Icon";
 import { Link } from "expo-router";
-import { DayType, ScheduleType } from "@/types/components/Schedule";
+import { DayProps, ScheduleProps } from "@/types/components/Schedule";
 
-export default function Schedule({ scheduleData, theme }: ScheduleType) {
+export default function Schedule({ scheduleData, theme }: ScheduleProps) {
   return (
     <View
       style={{ ...style.mainContainer, backgroundColor: theme.colors.surface }}
@@ -14,7 +14,7 @@ export default function Schedule({ scheduleData, theme }: ScheduleType) {
         <Text variant="titleMedium" style={style.title}>
           MY WEEK
         </Text>
-        <Link href="/(tabs)/profile">
+        <Link asChild href="/(tabs)/profile">
           <TouchableOpacity>
             <Icon
               library="FontAwesome"
@@ -38,7 +38,7 @@ export default function Schedule({ scheduleData, theme }: ScheduleType) {
   );
 }
 
-export function Day({ day, rest, theme }: DayType) {
+export function Day({ day, rest, theme }: DayProps) {
   return (
     <View
       style={{ ...style.dayContainer, backgroundColor: theme.colors.surface }}
