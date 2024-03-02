@@ -25,6 +25,5 @@ export default function CustomPlanList({data, theme} : CustomPlanListProps) {
 const style = StyleSheet.create({
     workoutsContainer: {
         flexDirection: "column",
-        gap: 20
     }
 });

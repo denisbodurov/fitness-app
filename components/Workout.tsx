@@ -15,8 +15,6 @@ export default function Workout({
   containerHeight = 150
 }: WorkoutProps) {
   
-
-
   return (
     <View style={{...style.container, height: containerHeight}}>
       <View style={style.difficultyContainer}>
@@ -41,7 +39,7 @@ export default function Workout({
       </View>
       <Image
         style={style.image}
-        source="https://picsum.photos/seed/696/3000/2000"
+        source={bannerURL}
         placeholder={"placeholder"}
         contentFit="cover"
         transition={1000}

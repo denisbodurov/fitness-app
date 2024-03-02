@@ -113,6 +113,6 @@ const style = StyleSheet.create({
     borderWidth: 2,
   },
   dayTitle: {
-    fontFamily: "LatoRegular",
+    fontFamily: "LatoBold",
   },
 });

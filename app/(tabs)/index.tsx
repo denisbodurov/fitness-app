@@ -4,16 +4,15 @@ import { StyleSheet, View } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import DataBlock from "@/components/DataBlock";
 import WorkoutList from "@/components/WorkoutList";
 import Schedule from "@/components/Schedule";
 import { ScheduleData } from "@/types/components/Schedule";
 import defaultSchedule from "@/constants/defaultSchedule";
-
+import Progress from "@/components/Progress";
 
 export default function HomeScreen() {
   const [schedule, setSchedule] = useState<ScheduleData>(defaultSchedule);
-  const [defaultWorkouts, setDefaultWorkouts] = useState('');
+  const [defaultWorkouts, setDefaultWorkouts] = useState("");
   const [dailyProgress, setDailyProgress] = useState();
 
   const theme = useTheme();
@@ -40,24 +39,34 @@ export default function HomeScreen() {
       difficulty: 3,
       id: 3,
     },
-
   ];
 
+  const mockStats = {
+    workouts: 12,
+    calories: 1204,
+    minutes: 120
+  }
 
   useEffect(() => {
     try {
       //Try to fetch data
     } catch {
       //Catch thrown errors and set default data
-      setSchedule(defaultSchedule)
+      setSchedule(defaultSchedule);
     }
-  }, [])
+  }, []);
 
   return (
     //Wrapping the home screen in safe area view
     <SafeAreaView style={style.safeArea}>
       {/* ScrollView that contains all of the home screen elements */}
-      <ScrollView contentContainerStyle={{...style.body, backgroundColor: theme.colors.background}}>
+      <ScrollView
+        contentContainerStyle={{
+          ...style.body,
+          backgroundColor: theme.colors.background,
+        }}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Data container providing information about the user's daily progress */}
         <View style={style.section}>
           <View style={style.sectionTitleContainer}>
@@ -71,10 +80,13 @@ export default function HomeScreen() {
             </Text>
           </View>
 
-          <View style={{...style.progressContainer, backgroundColor: theme.colors.surface}}>
-            <DataBlock value={0} suffix={"WORKOUTS"} theme={theme} />
-            <DataBlock value={630} suffix={"CAL"} theme={theme} />
-            <DataBlock value={72} suffix={"MINUTES"} theme={theme} />
+          <View
+            style={{
+              ...style.progressContainer,
+              backgroundColor: theme.colors.surface,
+            }}
+          >
+            <Progress data={mockStats} theme={theme}/>
           </View>
         </View>
         {/* Data container that provides info about the user's weekly workout schedule */}
@@ -89,7 +101,7 @@ export default function HomeScreen() {
               SCHEDULE
             </Text>
           </View>
-          <Schedule scheduleData={schedule} theme={theme}/>
+          <Schedule scheduleData={schedule} theme={theme} />
         </View>
         {/* Three separate sections with workouts of 3 different difficulty levels */}
         <View style={style.section}>
@@ -98,7 +110,7 @@ export default function HomeScreen() {
               BEGINNER
             </Text>
           </View>
-          <WorkoutList data={mockData} theme={theme}/>
+          <WorkoutList data={mockData} theme={theme} />
         </View>
         <View style={style.section}>
           <View style={style.sectionTitleContainer}>
@@ -118,7 +130,6 @@ export default function HomeScreen() {
     </SafeAreaView>
   );
 }
-
 
 const style = StyleSheet.create({
   safeArea: {

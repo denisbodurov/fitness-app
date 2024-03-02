@@ -23,12 +23,12 @@ export default function CustomPlan({
                 borderBottomColor: theme.colors.outline,
             }}
             >
-            <Text variant="titleLarge" style={style.title}>
+            <Text variant="titleLarge" style={{...style.title, color: theme.colors.onBackground}}>
                 {title.toUpperCase()}
             </Text>
             <View style={style.informationContainer}>
                 <Text
-                variant="titleMedium"
+                variant="titleSmall"
                 style={{
                     ...style.difficulty,
                     color:
@@ -45,8 +45,8 @@ export default function CustomPlan({
                     ? "INTERMEDIATE"
                     : "ADVANCED"}
                 </Text>
-                <Text variant="titleMedium">{String.fromCharCode(0x25CF)}</Text>
-                <Text variant="titleMedium" style={{ ...style.information }}>
+                <Text variant="titleSmall"style={{color: theme.colors.outline}}>{String.fromCharCode(0x25CF)}</Text>
+                <Text variant="titleSmall" style={{...style.information, color: theme.colors.outline}}>
                 {information.toUpperCase()}
                 </Text>
             </View>
@@ -72,6 +72,7 @@ const style = StyleSheet.create({
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "flex-start",
+    gap: 10,
     padding: 10,
     borderBottomWidth: 3,
   },
