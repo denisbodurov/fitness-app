@@ -50,7 +50,7 @@ export default function ProfileScreen() {
               </Text>
             </View>
           </View>
-          <Link asChild href="/(tabs)/workouts">
+          <Link asChild href="/modals/(workout)/step1">
             <TouchableOpacity>
               <Icon library="FontAwesome5" name="cog" color={theme.colors.primary} size={25}/>   
             </TouchableOpacity>          

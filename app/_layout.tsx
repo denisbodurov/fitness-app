@@ -66,7 +66,7 @@ function RootLayoutNav() {
     <PaperProvider theme={(colorScheme === "dark") ? DarkTheme : LightTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="modals/(workout)/step1" options={{ presentation: "modal" }} />
       </Stack>
     </PaperProvider>
   );

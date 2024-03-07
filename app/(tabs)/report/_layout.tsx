@@ -40,9 +40,9 @@ export default function TabsLayout() {
           height: 3
         }
       }}>
-        <Tabs.Screen name="index" options={{ title: "1 DAY" }} />
-        <Tabs.Screen name="run" options={{ title: "7 DAYS" }} />
-        <Tabs.Screen name="bike" options={{ title: "30 DAYS" }} />
+        <Tabs.Screen name="index" options={{ title: "1 WEEK" }} />
+        <Tabs.Screen name="month" options={{ title: "1 MONTH" }} />
+        <Tabs.Screen name="year" options={{ title: "1 YEAR" }} />
       </Tabs>
     </SafeAreaView>
   );
