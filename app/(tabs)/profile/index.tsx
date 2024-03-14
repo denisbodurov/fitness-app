@@ -7,7 +7,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
   const theme = useTheme();
-  const data: string = "s";
 
   const mockStats = {
     workouts: 48,
@@ -30,7 +29,7 @@ export default function ProfileScreen() {
         >
           <Avatar.Image
             size={75}
-            source={require("../../assets/images/floppa.jpg")}
+            source={require("../../../assets/images/floppa.jpg")}
           />
           <View style={style.userInfoContainer}>
             <Text
@@ -50,7 +49,7 @@ export default function ProfileScreen() {
               </Text>
             </View>
           </View>
-          <Link asChild href="/modals/(workout)/step1">
+          <Link asChild href="/(tabs)/profile/settings">
             <TouchableOpacity>
               <Icon library="FontAwesome5" name="cog" color={theme.colors.primary} size={25}/>   
             </TouchableOpacity>          
@@ -71,7 +70,6 @@ export default function ProfileScreen() {
           <View
             style={{
               ...style.container,
-              ...style.progressContainer,
               backgroundColor: theme.colors.surface,
             }}
           >

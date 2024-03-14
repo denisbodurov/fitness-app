@@ -29,12 +29,10 @@ export default function TabLayout() {
       inactiveColor={theme.colors.outline}
       activeColor={theme.colors.primary}
       barStyle={{...style.navigator, backgroundColor: theme.colors.surface}}
-
     >
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
-          
           title: "Home",
           tabBarIcon: ({ color }) => (
             <Icon library="FontAwesome6" color={color} name="house-chimney" size={24}/>
@@ -51,16 +49,17 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="report"
+        name="feed"
         options={{
-          title: "Report",
+          title: "Feed",
           tabBarIcon: ({ color }) => (
-            <Icon library="Ionicons" color={color} name="stats-chart" size={24}/>
+            <Icon library="FontAwesome" color={color} name="bell" size={24}/>
           ),
         }}
       />
       <Tabs.Screen
         name="profile"
+        redirect={false}
         options={{
           title: "Profile",
           tabBarIcon: ({ color }) => (
