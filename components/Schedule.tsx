@@ -14,7 +14,7 @@ export default function Schedule({ scheduleData, theme }: ScheduleProps) {
         <Text variant="titleMedium" style={style.title}>
           MY WEEK
         </Text>
-        <Link asChild href="/modal">
+        <Link asChild href="/(tabs)/home/editSchedule">
           <TouchableOpacity>
             <Icon
               library="FontAwesome"

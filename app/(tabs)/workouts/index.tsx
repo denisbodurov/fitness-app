@@ -1,10 +1,13 @@
 import CustomPlanList from '@/components/CustomPlanList';
-import Header from '@/components/Header';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { useTheme } from 'react-native-paper';
+import Icon from '@/components/Icon';
+import { Link } from 'expo-router';
+import { useState } from 'react';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Searchbar, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function WorkoutsScreen() {
+  const [searchQuery, setSearchQuery] = useState("");
   const theme = useTheme();
 
   const mockData = [
@@ -31,7 +34,25 @@ export default function WorkoutsScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <Header theme={theme}/>
+      <View style={styles.header}>
+      <Searchbar
+        style={{...styles.searchbar, backgroundColor: theme.colors.surface }}
+        placeholder="Search"
+        onChangeText={setSearchQuery}
+        value={searchQuery}
+        elevation={2}
+      />
+      <Link asChild href="/(tabs)/profile">
+        <TouchableOpacity>
+          <Icon
+            library="Feather"
+            name="plus-circle"
+            size={30}
+            color={theme.colors.primary}
+          />
+        </TouchableOpacity>
+      </Link>
+    </View>
       <ScrollView>
         <CustomPlanList data={mockData} theme={theme}/>
       </ScrollView>
@@ -44,6 +65,17 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-
+  header: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    gap: 10
+  },
+  searchbar: {
+    width: "90%",
+  },
   
 });

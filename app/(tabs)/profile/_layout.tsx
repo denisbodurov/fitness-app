@@ -1,8 +1,11 @@
-import { Stack } from "expo-router";
+import { Stack, router, useFocusEffect } from "expo-router";
+import { useCallback } from "react";
 import { useTheme } from "react-native-paper";
 
 function ProfileLayout() {
   const theme = useTheme();
+
+  
 
   return (
     <Stack>
