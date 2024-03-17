@@ -1,20 +1,47 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
 import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Post from "@/components/Post";
 import { useTheme } from "react-native-paper";
 
-export default function Feed () {
+export default function Feed() {
   const theme = useTheme();
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.scroll}>
-        <Post title="New epic feed" type="NEWS" postDate={new Date()} theme={theme}/>
+      <ScrollView contentContainerStyle={styles.scroll} scrollEnabled={true}>
+        <Post
+          id={1}
+          title="New epic feed"
+          type="NEWS"
+          postDate={new Date()}
+          theme={theme}
+        />
+        <Post
+          id={1}
+          title="New epic feed"
+          type="NEWS"
+          postDate={new Date()}
+          theme={theme}
+        />
+        <Post
+          id={1}
+          title="New epic feed"
+          type="NEWS"
+          postDate={new Date()}
+          theme={theme}
+        />
+        <Post
+          id={1}
+          title="New epic feed"
+          type="NEWS"
+          postDate={new Date()}
+          theme={theme}
+        />
       </ScrollView>
     </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   safeArea: {

@@ -1,5 +1,5 @@
-import { StyleSheet, View } from "react-native";
-import { Surface, Text } from "react-native-paper";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { Text } from "react-native-paper";
 import React from "react";
 import Icon from "./Icon";
 import { Link } from "expo-router";
@@ -16,43 +16,45 @@ export default function Workout({
 }: WorkoutProps) {
   
   return (
-    <View style={{...style.container, height: containerHeight}}>
-      <View style={style.difficultyContainer}>
-        <Icon
-          library="MaterialCommunityIcons"
-          name="lightning-bolt"
-          color={difficulty == 1 ? "cyan" : difficulty == 2 ? "orange" : "red"}
-          size={24}
+    <Link asChild href={`/(tabs)/workouts/${4}`}>
+      <TouchableOpacity style={{...style.container, height: containerHeight}} activeOpacity={0.8}>
+        <View style={style.difficultyContainer}>
+          <Icon
+            library="MaterialCommunityIcons"
+            name="lightning-bolt"
+            color={difficulty == 1 ? "cyan" : difficulty == 2 ? "orange" : "red"}
+            size={24}
+          />
+          <Icon
+            library="MaterialCommunityIcons"
+            name="lightning-bolt"
+            color={difficulty == 1 ? "gray" : difficulty == 2 ? "orange" : "red"}
+            size={24}
+          />
+          <Icon
+            library="MaterialCommunityIcons"
+            name="lightning-bolt"
+            color={difficulty == 1 ? "gray" : difficulty == 2 ? "gray" : "red"}
+            size={24}
+          />
+        </View>
+        <Image
+          style={style.image}
+          source={bannerURL}
+          placeholder={"placeholder"}
+          contentFit="cover"
+          transition={1000}
         />
-        <Icon
-          library="MaterialCommunityIcons"
-          name="lightning-bolt"
-          color={difficulty == 1 ? "gray" : difficulty == 2 ? "orange" : "red"}
-          size={24}
-        />
-        <Icon
-          library="MaterialCommunityIcons"
-          name="lightning-bolt"
-          color={difficulty == 1 ? "gray" : difficulty == 2 ? "gray" : "red"}
-          size={24}
-        />
-      </View>
-      <Image
-        style={style.image}
-        source={bannerURL}
-        placeholder={"placeholder"}
-        contentFit="cover"
-        transition={1000}
-      />
-      <View style={style.titleContainer}>
-        <Text variant="headlineMedium" style={style.title}>
-          {title}
-        </Text>
-        <Text variant="titleMedium" style={style.information}>
-          {information}
-        </Text>
-      </View>
-    </View>
+        <View style={style.titleContainer}>
+          <Text variant="headlineMedium" style={style.title}>
+            {title}
+          </Text>
+          <Text variant="titleMedium" style={style.information}>
+            {information}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    </Link>
   );
 }
 

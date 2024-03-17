@@ -29,6 +29,8 @@ export default function TabLayout() {
       inactiveColor={theme.colors.outline}
       activeColor={theme.colors.primary}
       barStyle={{...style.navigator, backgroundColor: theme.colors.surface}}
+      
+      
     >
       <Tabs.Screen
         name="home"
@@ -59,7 +61,6 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="profile"
-        redirect={false}
         options={{
           title: "Profile",
           tabBarIcon: ({ color }) => (
@@ -67,6 +68,7 @@ export default function TabLayout() {
           ),
         }}
       />
+
     </Tabs>
   );
 }
