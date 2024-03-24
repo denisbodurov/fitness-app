@@ -14,7 +14,7 @@ export default function Workout({
   difficulty,
   containerHeight = 150
 }: WorkoutProps) {
-  
+
   return (
     <Link asChild href={`/(tabs)/workouts/${4}`}>
       <TouchableOpacity style={{...style.container, height: containerHeight}} activeOpacity={0.8}>
@@ -22,19 +22,19 @@ export default function Workout({
           <Icon
             library="MaterialCommunityIcons"
             name="lightning-bolt"
-            color={difficulty == 1 ? "cyan" : difficulty == 2 ? "orange" : "red"}
+            color={difficulty === "beginner" ? "cyan" : difficulty === "intermediate" ? "orange" : "red"}
             size={24}
           />
           <Icon
             library="MaterialCommunityIcons"
             name="lightning-bolt"
-            color={difficulty == 1 ? "gray" : difficulty == 2 ? "orange" : "red"}
+            color={difficulty == "beginner" ? "gray" : difficulty == "intermediate" ? "orange" : "red"}
             size={24}
           />
           <Icon
             library="MaterialCommunityIcons"
             name="lightning-bolt"
-            color={difficulty == 1 ? "gray" : difficulty == 2 ? "gray" : "red"}
+            color={difficulty == "beginner" ? "gray" : difficulty == "intermediate" ? "gray" : "red"}
             size={24}
           />
         </View>
@@ -44,7 +44,9 @@ export default function Workout({
           placeholder={"placeholder"}
           contentFit="cover"
           transition={1000}
+          onError={(error) => console.error("The error is: " + error.error)}
         />
+        <View style={{...style.dimming, backgroundColor: "rgba(0,0,0,0.6)"}}/>
         <View style={style.titleContainer}>
           <Text variant="headlineMedium" style={style.title}>
             {title}
@@ -94,4 +96,9 @@ const style = StyleSheet.create({
     height: "100%",
     resizeMode: "cover",
   },
+  dimming: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+  }
 });

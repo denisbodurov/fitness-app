@@ -10,6 +10,7 @@ import {
   Feather,
   Ionicons,
   FontAwesome6,
+  Entypo,
 } from "@expo/vector-icons";
 
 function Icon({ name, color, size = 28, library }: IconProps) {
@@ -21,6 +22,7 @@ function Icon({ name, color, size = 28, library }: IconProps) {
     MaterialCommunityIcons,
     Ionicons,
     Feather,
+    Entypo,
   }[library];
 
   return <IconComponent size={size} name={name} color={color}/>;

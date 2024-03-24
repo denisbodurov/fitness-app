@@ -9,5 +9,6 @@ export interface IconProps {
     | "AntDesign"
     | "MaterialCommunityIcons"
     | "Ionicons"
+    | "Entypo"
     | "Feather";
 };

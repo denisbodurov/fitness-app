@@ -9,6 +9,7 @@ import Schedule from "@/components/Schedule";
 import { ScheduleData } from "@/types/components/Schedule";
 import defaultSchedule from "@/constants/defaultSchedule";
 import Progress from "@/components/Progress";
+import { WorkoutData } from "@/types/components/Workout";
 
 export default function HomeScreen() {
   const [schedule, setSchedule] = useState<ScheduleData>(defaultSchedule);
@@ -17,26 +18,26 @@ export default function HomeScreen() {
 
   const theme = useTheme();
 
-  const mockData = [
+  const mockData : WorkoutData[] = [
     {
-      bannerURL: "test.com",
+      type: "arms",
       title: "ARMS WORKOUT",
       information: "16 EXERCISES - 12 MINUTES",
-      difficulty: 1,
+      difficulty: "beginner",
       id: 1,
     },
     {
-      bannerURL: "test.com",
+      type: "legs",
       title: "LEGS WORKOUT",
       information: "6 EXERCISES - 9 MINUTES",
-      difficulty: 2,
+      difficulty: "intermediate",
       id: 2,
     },
     {
-      bannerURL: "test.com",
+      type: "abs",
       title: "ABS WORKOUT",
       information: "12 EXERCISES - 11 MINUTES",
-      difficulty: 3,
+      difficulty: "advanced",
       id: 3,
     },
   ];

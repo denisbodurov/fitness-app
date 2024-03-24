@@ -1,4 +1,4 @@
-import { StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import React from "react";
 import Post from "./Post";
 import { PostListProps } from "@/types/components/Post";
@@ -20,7 +20,7 @@ export default function CustomPlanList({data, theme} : PostListProps) {
     );
   });
 
-  return <View style={style.workoutsContainer}>{customPlans}</View>;
+  return <ScrollView contentContainerStyle={style.workoutsContainer}>{customPlans}</ScrollView>;
 }
 
 const style = StyleSheet.create({

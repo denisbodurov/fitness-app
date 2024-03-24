@@ -1,19 +1,31 @@
-import { router } from 'expo-router';
-import { StyleSheet, View} from 'react-native';
-import { IconButton, Text, useTheme } from 'react-native-paper';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from "expo-router";
+import { StyleSheet, View } from "react-native";
+import { IconButton, Text, useTheme } from "react-native-paper";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ModalScreen() {
-  const theme = useTheme()
+  const theme = useTheme();
 
   return (
     <SafeAreaView style={styles.safeArea}>
       {/* Header */}
-      <View style={{...styles.header, backgroundColor: theme.colors.surface}}>
+      <View style={{ ...styles.header, backgroundColor: theme.colors.surface }}>
         <View style={styles.leftContainer}>
-          <IconButton icon="arrow-left" size={30} iconColor={theme.colors.onSurface} rippleColor={'rgba(125,125,125,0.2)'} onPress={() => router.back()}/>
+          <IconButton
+            icon="arrow-left"
+            size={30}
+            iconColor={theme.colors.onSurface}
+            rippleColor={"rgba(125,125,125,0.2)"}
+            onPress={() => router.back()}
+          />
         </View>
-        <Text variant='titleLarge' style={styles.headerTitle}>Current Post</Text>
+        <Text
+          variant="titleMedium"
+          style={styles.headerTitle}
+          numberOfLines={1}
+        >
+          Current Post
+        </Text>
         <View style={styles.rightContainer} />
       </View>
     </SafeAreaView>
@@ -22,7 +34,7 @@ export default function ModalScreen() {
 
 const styles = StyleSheet.create({
   safeArea: {
-    flex: 1
+    flex: 1,
   },
   header: {
     width: "100%",
@@ -31,14 +43,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 10,
     paddingVertical: 5,
-    elevation: 2
+    elevation: 2,
   },
   leftContainer: {
-    flex: 1
+    flex: 1,
   },
   headerTitle: {
     fontFamily: "ProtestStrike",
-    textAlign: "center", // Center text horizontally
+    textAlign: "center",
     flex: 1, // Take remaining space
   },
   rightContainer: {
