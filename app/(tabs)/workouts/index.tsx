@@ -42,7 +42,7 @@ export default function WorkoutsScreen() {
         value={searchQuery}
         elevation={2}
       />
-      <Link asChild href="/(tabs)/profile">
+      <Link asChild href="/(tabs)/workouts/(manage_workouts)/createWorkout">
         <TouchableOpacity>
           <Icon
             library="Feather"

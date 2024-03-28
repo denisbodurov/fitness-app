@@ -15,6 +15,7 @@ import PickerDialog from "@/components/PickerDialog";
 import DateTimePicker, {
   DateTimePickerAndroid,
 } from "@react-native-community/datetimepicker";
+import FunctionalHeader from "@/components/FunctionalHeader";
 
 function SettingsScreen() {
   const theme = useTheme();
@@ -57,30 +58,7 @@ function SettingsScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       {/* Header */}
-      <View style={{ ...styles.header, backgroundColor: theme.colors.surface }}>
-        <View style={styles.leftContainer}>
-          <IconButton
-            icon="arrow-left"
-            size={30}
-            iconColor={theme.colors.onSurface}
-            rippleColor={"rgba(125,125,125,0.2)"}
-            onPress={() => showDialogue("backActionDialog")}
-          />
-        </View>
-        <Text variant="titleLarge" style={styles.headerTitle}>
-          Settings
-        </Text>
-        <View style={styles.rightContainer}>
-          <Button
-            icon="content-save"
-            mode="text"
-            onPress={() => console.log("Pressed")}
-            labelStyle={styles.buttonTitle}
-          >
-            SAVE
-          </Button>
-        </View>
-      </View>
+      <FunctionalHeader title="Settings" onSave={() => console.log("Saved")} onBack={() => showDialogue("backActionDialog")}/>
       <UnsavedChangesDialog
         visible={dialogStates.backActionDialog}
         onStay={() => handleStay("backActionDialog")}
@@ -208,35 +186,6 @@ function SettingsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-  },
-  header: {
-    width: "100%",
-    height: 60,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    elevation: 2,
-  },
-  headerTitle: {
-    fontFamily: "ProtestStrike",
-  },
-  leftContainer: {
-    flex: 1,
-  },
-  rightContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "flex-end",
-  },
-  buttonTitle: {
-    fontFamily: "ProtestStrike",
-    flexDirection: "column",
-    justifyContent: "center",
-    padding: 0,
-    alignItems: "center",
-    fontSize: 18,
   },
   listContainer: {
     flexDirection: "column",
