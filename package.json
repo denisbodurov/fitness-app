@@ -27,7 +27,7 @@
     "expo-status-bar": "~1.11.1",
     "expo-system-ui": "~2.9.3",
     "expo-web-browser": "~12.8.2",
-    "firebase": "^10.9.0",
+    "firebase": "^10.10.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-native": "^0.73.6",
@@ -45,7 +45,10 @@
     "react-native-tab-view": "^3.5.2",
     "react-native-vector-icons": "^10.0.3",
     "react-native-web": "~0.19.6",
-    "react-native-wheel-scrollview-picker": "^2.0.4"
+    "react-native-wheel-scrollview-picker": "^2.0.4",
+    "@react-native-async-storage/async-storage": "1.21.0",
+    "expo-secure-store": "~12.8.1",
+    "undefined": "@firebase/auth/react-native"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

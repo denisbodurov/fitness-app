@@ -9,21 +9,21 @@ function ManageWorkoutsLayout() {
     <WorkoutProvider>
     <Stack>
         <Stack.Screen
-          name="createWorkout"
+          name="create-workout"
           options={{
             headerShown: false,
             contentStyle: { backgroundColor: theme.colors.background },
           }}
         />
         <Stack.Screen
-          name="addExercise"
+          name="add-exercise"
           options={{
             headerShown: false,
             contentStyle: { backgroundColor: theme.colors.background },
           }}
         />
         <Stack.Screen
-          name="editWorkout"
+          name="edit-workout"
           options={{
             headerShown: false,
             contentStyle: { backgroundColor: theme.colors.background },

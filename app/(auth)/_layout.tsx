@@ -1,37 +1,27 @@
-import { StackActions, useNavigation } from "@react-navigation/native";
-import { Stack, useFocusEffect } from "expo-router";
-import { useCallback } from "react";
+import { Stack } from "expo-router";
 import { useTheme } from "react-native-paper";
 
 function FeedLayout() {
   const theme = useTheme();
-  // const navigation = useNavigation()
-
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     return () => {
-  //         navigation.dispatch(StackActions.popToTop());
-  //     };
-  //   }, [navigation])
-  // );
 
   return (
     <Stack>
       <Stack.Screen
-        name="index"
+        name="sign-in"
         options={{
           headerShown: false,
           contentStyle: { backgroundColor: theme.colors.background },
         }}
       />
       <Stack.Screen
-        name="edit-schedule"
+        name="sign-up"
         options={{
           headerShown: false,
           contentStyle: { backgroundColor: theme.colors.background },
         }}
       />
     </Stack>
+    
   );
 }
 

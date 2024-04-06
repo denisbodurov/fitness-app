@@ -34,7 +34,7 @@ export default function TabLayout() {
         const isSettings = routeParts[routeParts.length - 1] === 'settings'; // Check for Settings
 
         return ({
-          tabBarVisible: !isSettings, // Hide tab bar for Settings
+          tabBarVisible: false // Hide tab bar for Settings
         } as MaterialBottomTabNavigationOptions);
       }}
     >
