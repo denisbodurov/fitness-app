@@ -1,18 +1,35 @@
 import Icon from "@/components/Icon";
 import Progress from "@/components/Progress";
-import { Link } from "expo-router";
+import { FirebaseContext } from "@/providers/FirebaseProvider";
+import useFirebase from "@/utils/hooks/useFirebase";
+import { Link, router } from "expo-router";
+import { useContext } from "react";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
-import { Avatar, List, Text, useTheme } from "react-native-paper";
+import { Avatar, Button, List, Text, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
   const theme = useTheme();
+  const { signOut } = useFirebase();
+  const { user } = useContext(FirebaseContext)
+
+  const handleSignOut = () => {
+    signOut()
+    router.navigate('/(auth)/sign-in')
+  }
 
   const mockStats = {
     workouts: 48,
     calories: 12494,
     minutes: 590,
   };
+
+  const creationDate = new Date(user?.metadata.creationTime!).toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).replace(/\//g, '.');;
+
 
   return (
     <SafeAreaView style={style.safeArea}>
@@ -36,7 +53,7 @@ export default function ProfileScreen() {
               variant="titleLarge"
               style={{ ...style.userInfo, color: theme.colors.onSurface }}
             >
-              Floppa Bingus
+              {user?.displayName}
             </Text>
             <View
               style={{ ...style.badge, backgroundColor: theme.colors.primary }}
@@ -45,14 +62,19 @@ export default function ProfileScreen() {
                 variant="labelSmall"
                 style={{ ...style.userInfo, color: theme.colors.onPrimary }}
               >
-                Joined 20.01.2024
+                Registered: {creationDate}
               </Text>
             </View>
           </View>
           <Link asChild href="/(tabs)/profile/settings">
             <TouchableOpacity>
-              <Icon library="FontAwesome5" name="cog" color={theme.colors.primary} size={25}/>   
-            </TouchableOpacity>          
+              <Icon
+                library="FontAwesome5"
+                name="cog"
+                color={theme.colors.primary}
+                size={25}
+              />
+            </TouchableOpacity>
           </Link>
         </View>
         <View style={style.section}>
@@ -152,6 +174,17 @@ export default function ProfileScreen() {
             </List.Section>
           </View>
         </View>
+        <Button
+          style={{
+            ...style.logoutButton,
+            backgroundColor: theme.colors.surface,
+          }}
+          onPress={handleSignOut}
+        >
+          <Text variant="titleMedium" style={style.logoutText}>
+            LOGOUT
+          </Text>{" "}
+        </Button>
       </ScrollView>
     </SafeAreaView>
   );
@@ -220,5 +253,13 @@ const style = StyleSheet.create({
   badge: {
     borderRadius: 10,
     padding: 5,
+  },
+  logoutButton: {
+    width: "100%",
+    elevation: 3
+  },
+  logoutText: {
+    color: "red",
+    fontFamily: "ProtestStrike"
   },
 });

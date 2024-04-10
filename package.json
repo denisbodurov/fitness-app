@@ -4,8 +4,8 @@
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
     "test": "jest --watchAll"
   },
@@ -14,15 +14,17 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.0",
+    "@react-native-async-storage/async-storage": "1.21.0",
     "@react-native-community/datetimepicker": "7.6.1",
     "@react-navigation/material-bottom-tabs": "^6.2.20",
     "@react-navigation/material-top-tabs": "^6.6.6",
     "@react-navigation/native": "^6.1.10",
-    "expo": "^50.0.14",
+    "expo": "^50.0.15",
     "expo-font": "^11.10.3",
     "expo-image": "~1.10.6",
     "expo-linking": "~6.2.2",
     "expo-router": "^3.4.8",
+    "expo-secure-store": "~12.8.1",
     "expo-splash-screen": "~0.26.4",
     "expo-status-bar": "~1.11.1",
     "expo-system-ui": "~2.9.3",
@@ -46,8 +48,6 @@
     "react-native-vector-icons": "^10.0.3",
     "react-native-web": "~0.19.6",
     "react-native-wheel-scrollview-picker": "^2.0.4",
-    "@react-native-async-storage/async-storage": "1.21.0",
-    "expo-secure-store": "~12.8.1",
     "undefined": "@firebase/auth/react-native"
   },
   "devDependencies": {

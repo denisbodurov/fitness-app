@@ -1,12 +1,52 @@
-import { router } from 'expo-router';
-import React, { useState } from 'react';
-import { StyleSheet, View } from "react-native";
+import { useState }  from "react";
+import { StyleSheet, View, ActivityIndicator } from "react-native";
 import { useTheme, Text, TextInput, Button } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { router } from "expo-router";
+import useFirebase from "@/utils/hooks/useFirebase";
 
-export default function ModalScreen() {
+export default function SignInScreen() {
   const theme = useTheme();
+
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [status, setStatus] = useState({
+    isLoading: false,
+    error: "",
+  });
+  const { signIn } = useFirebase();
+  const [credentials, setCredentials] = useState({
+    email: "",
+    password: "",
+  });
+
+  const handleSignIn = async () => {
+    if (!credentials.email || !credentials.password) {
+      setStatus({ ...status, error: "Please fill in all fields" });
+      return;
+    }
+
+    setStatus({ ...status, isLoading: true });
+    try {
+      const response = await signIn(credentials.email, credentials.password);
+
+      if (response.user) {
+        router.navigate("/(tabs)/home");
+      }
+
+      if (response.error) {
+        setStatus({ ...status, error: response.error });
+      }
+    } catch (error: any) {
+      setStatus({
+        ...status,
+        error: "Something went wrong. Please try again later!",
+      });
+    } finally {
+      setStatus((prevStatus) => {
+        return { ...prevStatus, isLoading: false };
+      });
+    }
+  };
 
   const togglePasswordVisibility = () => {
     setIsPasswordVisible(!isPasswordVisible);
@@ -19,49 +59,93 @@ export default function ModalScreen() {
           <Text variant="headlineLarge" style={styles.title}>
             SIGN IN
           </Text>
+          {status.error && (
+            <View
+              style={{
+                ...styles.errorContainer,
+                backgroundColor: theme.colors.errorContainer,
+              }}
+            >
+              <Text
+                style={{
+                  ...styles.errorMessage,
+                  color: theme.colors.onErrorContainer,
+                }}
+              >
+                {status.error}
+              </Text>
+            </View>
+          )}
           <View style={styles.inputGroup}>
             <TextInput
               style={styles.inputField}
-              label="Username"
+              label="Email"
               mode="outlined"
-              textContentType="username"
+              textContentType="emailAddress"
+              onChangeText={(email) =>
+                setCredentials({ ...credentials, email })
+              }
+              error={status.error ? true : false}
             />
             <TextInput
               style={styles.inputField}
               label="Password"
               mode="outlined"
               textContentType="password"
+              onChangeText={(password) =>
+                setCredentials({ ...credentials, password })
+              }
               secureTextEntry={!isPasswordVisible}
               right={
                 <TextInput.Icon
-                  icon={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
+                  icon={isPasswordVisible ? "eye-off-outline" : "eye-outline"}
+                  color={
+                    status.error ? theme.colors.error : theme.colors.outline
+                  }
                   onPress={togglePasswordVisibility}
                 />
               }
+              error={status.error ? true : false}
             />
           </View>
 
           <View style={styles.actionGroup}>
-          <Button
-            style={{ ...styles.button, backgroundColor: theme.colors.primary }}
-            mode="contained"
-            onPress={() => console.log("SIGN IN")}
-          >
-            <Text
-              variant="titleMedium"
-              style={{ ...styles.buttonTitle, color: theme.colors.onPrimary }}
+            <Button
+              style={{
+                ...styles.button,
+                backgroundColor: theme.colors.primary,
+              }}
+              mode="contained"
+              onPress={handleSignIn}
+              disabled={status.isLoading}
             >
-              LOGIN
-            </Text>
-          </Button>
-          <View style={styles.signupGroup}>
-            <Text>Don't have an account yet?</Text>
-            <Button mode="text" onPress={() => router.replace("/(auth)/sign-up")}>
-              SIGN UP
+              {status.isLoading ? (
+                <ActivityIndicator
+                  size="small"
+                  color={theme.colors.onPrimary}
+                />
+              ) : (
+                <Text
+                  variant="titleMedium"
+                  style={{
+                    ...styles.buttonTitle,
+                    color: theme.colors.onPrimary,
+                  }}
+                >
+                  LOGIN
+                </Text>
+              )}
             </Button>
+            <View style={styles.signinGroup}>
+              <Text>Don't have an account yet?</Text>
+              <Button
+                mode="text"
+                onPress={() => router.navigate("/(auth)/sign-up")}
+              >
+                SIGN UP
+              </Button>
+            </View>
           </View>
-          </View>
-          
         </View>
       </View>
     </SafeAreaView>
@@ -80,11 +164,12 @@ const styles = StyleSheet.create({
   },
   formGroup: {
     width: "100%",
-    height: 400,
+    maxHeight: 600,
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "space-around",
     padding: 20,
+    gap: 20,
   },
   inputGroup: {
     width: "100%",
@@ -99,12 +184,16 @@ const styles = StyleSheet.create({
   button: {
     width: "100%",
     elevation: 3,
+    height: 50,
+    padding: 0,
     borderRadius: 10,
   },
   buttonTitle: {
+    width: "100%",
+    height: "100%",
     fontFamily: "ProtestStrike",
   },
-  signupGroup: {
+  signinGroup: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -113,5 +202,16 @@ const styles = StyleSheet.create({
     width: "100%",
     flexDirection: "column",
     gap: 5,
-  }
+  },
+  errorContainer: {
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 10,
+    padding: 20,
+    borderRadius: 10,
+  },
+  errorMessage: {
+    fontFamily: "LatoBold",
+  },
 });

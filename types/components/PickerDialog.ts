@@ -4,8 +4,8 @@ export interface PickerDialogProps {
   value?: string;
   visible: boolean;
   onChange?: () => void;
-  onStay: () => void;
-  onDismiss: () => void;
+  onConfirm: () => void;
+  onCancel: () => void;
   type: "weight" | "height";
   theme: MD3Theme;
 }

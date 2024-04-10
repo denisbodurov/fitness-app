@@ -1,5 +1,13 @@
+import { FirebaseContext } from "@/providers/FirebaseProvider";
 import { Redirect } from "expo-router";
+import { useContext } from "react";
 
 export default function Index() {
-    return <Redirect href="/(auth)/sign-in" />;
+  const { user }  = useContext(FirebaseContext);
+
+  return user ? (
+    <Redirect href="/(tabs)/home" />
+  ) : (
+    <Redirect href="/(auth)/sign-in" />
+  );
 }

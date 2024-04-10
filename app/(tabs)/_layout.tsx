@@ -1,5 +1,5 @@
-import React from "react";
-import { withLayoutContext } from "expo-router";
+import React, { useContext } from "react";
+import { Redirect, withLayoutContext } from "expo-router";
 import {
   MaterialBottomTabNavigationEventMap,
   MaterialBottomTabNavigationOptions,
@@ -10,6 +10,7 @@ import { useTheme } from "react-native-paper";
 
 import Icon from "@/components/Icon";
 import { StyleSheet } from "react-native";
+import { FirebaseContext } from "@/providers/FirebaseProvider";
 
 const { Navigator } = createMaterialBottomTabNavigator();
 
@@ -22,7 +23,9 @@ export const Tabs = withLayoutContext<
 
 export default function TabLayout() {
   const theme = useTheme();
+  const { user } = useContext(FirebaseContext);
 
+  if(user) {
   return (
     <Tabs
       shifting={true}
@@ -31,10 +34,10 @@ export default function TabLayout() {
       barStyle={{ ...style.navigator, backgroundColor: theme.colors.surface }}
       screenOptions={({ route }) => {
         const routeParts = route.name.split('/'); // Split route name
-        const isSettings = routeParts[routeParts.length - 1] === 'settings'; // Check for Settings
-
+        
         return ({
-          tabBarVisible: false // Hide tab bar for Settings
+          tabBarVisible: false
+          
         } as MaterialBottomTabNavigationOptions);
       }}
     >
@@ -86,6 +89,9 @@ export default function TabLayout() {
       />
     </Tabs>
   );
+  } else {
+    <Redirect href="/(auth)/sign-in"/>
+  }
 }
 
 const style = StyleSheet.create({

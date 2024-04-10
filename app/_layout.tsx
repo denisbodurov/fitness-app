@@ -8,6 +8,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 
 import { useColorScheme } from 'react-native';
+import { FirebaseProvider } from '@/providers/FirebaseProvider';
+import useFirebase from '@/utils/hooks/useFirebase';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -61,14 +63,17 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
-
+  
   return (
-    <PaperProvider theme={(colorScheme === "dark") ? DarkTheme : LightTheme}>
-      <Stack>
+    <FirebaseProvider>
+      <PaperProvider theme={(colorScheme === "dark") ? DarkTheme : LightTheme}>
+        <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="index" options={{ headerShown: false }} />
       </Stack>
     </PaperProvider>
+    </FirebaseProvider>
+
   );
 }

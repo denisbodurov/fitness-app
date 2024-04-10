@@ -9,7 +9,14 @@ export default function Feed() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.scroll} scrollEnabled={true}>
+      <ScrollView contentContainerStyle={styles.scroll}>
+        <Post
+          id={1}
+          title="New epic feed"
+          type="NEWS"
+          postDate={new Date()}
+          theme={theme}
+        />
         <Post
           id={1}
           title="New epic feed"
@@ -50,6 +57,8 @@ const styles = StyleSheet.create({
   scroll: {
     flex: 1,
     flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 20,
     gap: 20,
   },
