@@ -1,5 +1,5 @@
 import { useState }  from "react";
-import { StyleSheet, View, ActivityIndicator } from "react-native";
+import { StyleSheet, View, ActivityIndicator, KeyboardAvoidingView, ScrollView, Platform } from "react-native";
 import { useTheme, Text, TextInput, Button } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -54,10 +54,11 @@ export default function SignInScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+      <KeyboardAvoidingView style={styles.keyboardAvoidingContainer} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.formGroup}>
           <Text variant="headlineLarge" style={styles.title}>
-            SIGN IN
+            SPARKFIT
           </Text>
           {status.error && (
             <View
@@ -108,8 +109,8 @@ export default function SignInScreen() {
               error={status.error ? true : false}
             />
           </View>
-
-          <View style={styles.actionGroup}>
+        </View>
+        <View style={styles.actionGroup}>
             <Button
               style={{
                 ...styles.button,
@@ -132,7 +133,7 @@ export default function SignInScreen() {
                     color: theme.colors.onPrimary,
                   }}
                 >
-                  LOGIN
+                  SIGN IN
                 </Text>
               )}
             </Button>
@@ -146,14 +147,17 @@ export default function SignInScreen() {
               </Button>
             </View>
           </View>
-        </View>
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
+    flex: 1,
+  },
+  keyboardAvoidingContainer: {
     flex: 1,
   },
   container: {
@@ -202,6 +206,7 @@ const styles = StyleSheet.create({
     width: "100%",
     flexDirection: "column",
     gap: 5,
+    padding: 20,
   },
   errorContainer: {
     width: "100%",

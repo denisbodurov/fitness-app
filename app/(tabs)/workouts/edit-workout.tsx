@@ -1,14 +1,23 @@
 import { router, useNavigation } from "expo-router";
-import { StyleSheet, View } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import { Button, IconButton, Text, useTheme } from "react-native-paper";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "@/components/Icon";
 
 export default function addExercise() {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View
+    style={{
+      ...styles.safeArea,
+      paddingTop: insets.top,
+      paddingRight: insets.right,
+      paddingLeft: insets.left,
+      paddingBottom: Platform.OS === "android" ? insets.bottom : 0,
+    }}
+  >
       {/* Header */}
       <View style={{ ...styles.header, backgroundColor: theme.colors.surface }}>
         <View style={styles.leftContainer}>
@@ -96,7 +105,7 @@ export default function addExercise() {
           <Text variant="titleMedium" style={{color: theme.colors.onPrimary}}>START WORKOUT</Text>
         </Button>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

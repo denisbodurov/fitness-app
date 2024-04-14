@@ -2,13 +2,16 @@ import CustomPlanList from '@/components/CustomPlanList';
 import Icon from '@/components/Icon';
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Searchbar, useTheme } from 'react-native-paper';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function WorkoutsScreen() {
-  const [searchQuery, setSearchQuery] = useState("");
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
+
+  const [searchQuery, setSearchQuery] = useState("");
+
 
   const mockData = [
     {
@@ -33,7 +36,15 @@ export default function WorkoutsScreen() {
   ];
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View
+    style={{
+      ...styles.safeArea,
+      paddingTop: insets.top,
+      paddingRight: insets.right,
+      paddingLeft: insets.left,
+      paddingBottom: Platform.OS === "android" ? insets.bottom : 0,
+    }}
+  >
       <View style={styles.header}>
       <Searchbar
         style={{...styles.searchbar, backgroundColor: theme.colors.surface }}
@@ -42,7 +53,7 @@ export default function WorkoutsScreen() {
         value={searchQuery}
         elevation={2}
       />
-      <Link asChild href="/(tabs)/workouts/(manage_workouts)/createWorkout">
+      <Link asChild href="/(tabs)/workouts/create-workout">
         <TouchableOpacity>
           <Icon
             library="Feather"
@@ -56,7 +67,7 @@ export default function WorkoutsScreen() {
       <ScrollView>
         <CustomPlanList data={mockData} theme={theme}/>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

@@ -7,6 +7,7 @@ import {
   AuthError,
   createUserWithEmailAndPassword,
   updateProfile,
+  deleteUser,
 } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 
@@ -51,7 +52,7 @@ const useFirebase = () => {
     email: string,
     password: string,
     gender: string,
-    dob: string,
+    dob: Date,
     weight: number,
     height: number,
   ) => {
@@ -72,17 +73,25 @@ const useFirebase = () => {
       const userId = userCredentials.user.uid;
       const userRef = doc(FIREBASE_DB, "users", userId);
 
-      await setDoc(userRef, {
-        gender: gender,
-        dob: dob,
-        weight: weight,
-        height: height,
-        schedule: defaultSchedule,
-        workouts: []
-      });
-
-      // If all steps succeed, return the user
-      return { user: userCredentials.user };
+      
+      try {
+        await setDoc(userRef, {
+          gender: gender,
+          dob: dob,
+          weight: weight,
+          height: height,
+          schedule: defaultSchedule,
+          workouts: []
+        });
+      
+        // If successful, return the user
+        return { user: userCredentials.user };
+      } catch (error) {
+        // Firestore write failed, so delete the created user from Authentication
+        await deleteUser(userCredentials.user);
+        console.error("Error creating user document in Firestore:", error);
+        return { error: "Failed to create user account." };
+      }
       
     } catch (error: any) {
       let errorMessage: string;

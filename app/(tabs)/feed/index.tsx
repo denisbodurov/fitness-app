@@ -1,14 +1,23 @@
-import { ScrollView, StyleSheet } from "react-native";
+import { Platform, ScrollView, StyleSheet, View } from "react-native";
 import React from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Post from "@/components/Post";
 import { useTheme } from "react-native-paper";
 
 export default function Feed() {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View
+      style={{
+        ...styles.safeArea,
+        paddingTop: insets.top,
+        paddingRight: insets.right,
+        paddingLeft: insets.left,
+        paddingBottom: Platform.OS === "android" ? insets.bottom : 0,
+      }}
+    >
       <ScrollView contentContainerStyle={styles.scroll}>
         <Post
           id={1}
@@ -46,7 +55,7 @@ export default function Feed() {
           theme={theme}
         />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

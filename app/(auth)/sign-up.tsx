@@ -57,7 +57,7 @@ export default function ModalScreen() {
             credentials.email,
             credentials.password,
             "male",
-            "27/01/2005",
+            new Date("2005-01-27"),
             70,
             183
           );
@@ -87,13 +87,13 @@ export default function ModalScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingView
-          style={{flex: 1}}
+          style={styles.keyboardAvoidingContainer}
           behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
         <ScrollView contentContainerStyle={styles.container}>
           <View style={styles.formGroup}>
             <Text variant="headlineLarge" style={styles.title}>
-              SIGN UP
+              SPARKFIT
             </Text>
             {status.error && (
               <View
@@ -186,8 +186,8 @@ export default function ModalScreen() {
                 }
               />
             </View>
-
-            <View style={styles.actionGroup}>
+          </View>
+          <View style={styles.actionGroup}>
               <Button
                 style={{
                   ...styles.button,
@@ -209,7 +209,7 @@ export default function ModalScreen() {
                       color: theme.colors.onPrimary,
                     }}
                   >
-                    REGISTER
+                    SIGN UP
                   </Text>
                 )}
               </Button>
@@ -223,7 +223,6 @@ export default function ModalScreen() {
                 </Button>
               </View>
             </View>
-          </View>
         </ScrollView>
         </KeyboardAvoidingView>
     </SafeAreaView>
@@ -233,6 +232,9 @@ export default function ModalScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+  },
+  keyboardAvoidingContainer: {
+    flex: 1
   },
   container: {
     flex: 1,
@@ -290,8 +292,11 @@ const styles = StyleSheet.create({
     position: "relative",
     width: "100%",
     flexDirection: "column",
+    justifyContent: "space-between",
+    alignItems: "center",
     gap: 5,
     height: 85,
+    padding: 40,
   },
   errorContainer: {
     width: "100%",

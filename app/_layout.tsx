@@ -9,7 +9,6 @@ import { useEffect } from 'react';
 
 import { useColorScheme } from 'react-native';
 import { FirebaseProvider } from '@/providers/FirebaseProvider';
-import useFirebase from '@/utils/hooks/useFirebase';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -68,7 +67,7 @@ function RootLayoutNav() {
     <FirebaseProvider>
       <PaperProvider theme={(colorScheme === "dark") ? DarkTheme : LightTheme}>
         <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false}} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="index" options={{ headerShown: false }} />
       </Stack>

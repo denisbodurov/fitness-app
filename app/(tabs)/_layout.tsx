@@ -1,101 +1,128 @@
 import React, { useContext } from "react";
-import { Redirect, withLayoutContext } from "expo-router";
-import {
-  MaterialBottomTabNavigationEventMap,
-  MaterialBottomTabNavigationOptions,
-  createMaterialBottomTabNavigator,
-} from "react-native-paper/react-navigation";
-import { ParamListBase, TabNavigationState } from "@react-navigation/native";
-import { useTheme } from "react-native-paper";
-
+import { Redirect, Tabs, useSegments } from "expo-router";
+import { TouchableRipple, useTheme } from "react-native-paper";
 import Icon from "@/components/Icon";
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 import { FirebaseContext } from "@/providers/FirebaseProvider";
-
-const { Navigator } = createMaterialBottomTabNavigator();
-
-export const Tabs = withLayoutContext<
-  MaterialBottomTabNavigationOptions,
-  typeof Navigator,
-  TabNavigationState<ParamListBase>,
-  MaterialBottomTabNavigationEventMap
->(Navigator);
+import { IconProps } from "@/types/components/Icon";
 
 export default function TabLayout() {
   const theme = useTheme();
   const { user } = useContext(FirebaseContext);
 
-  if(user) {
-  return (
-    <Tabs
-      shifting={true}
-      inactiveColor={theme.colors.outline}
-      activeColor={theme.colors.primary}
-      barStyle={{ ...style.navigator, backgroundColor: theme.colors.surface }}
-      screenOptions={({ route }) => {
-        const routeParts = route.name.split('/'); // Split route name
-        
-        return ({
-          tabBarVisible: false
-          
-        } as MaterialBottomTabNavigationOptions);
-      }}
-    >
-      <Tabs.Screen
-        name="home"
-        options={{
-          title: "Home",
-          tabBarIcon: ({ color }) => (
-            <Icon
-              library="FontAwesome6"
-              color={color}
-              name="house-chimney"
-              size={24}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="workouts"
-        options={{
-          title: "Workouts",
-          tabBarIcon: ({ color }) => (
-            <Icon
-              library="MaterialCommunityIcons"
-              color={color}
-              name="dumbbell"
-              size={24}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="feed"
-        options={{
-          title: "Feed",
-          tabBarIcon: ({ color }) => (
-            <Icon library="FontAwesome" color={color} name="bell" size={24} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Profile",
-          tabBarIcon: ({ color }) => (
-            <Icon library="FontAwesome" color={color} name="user" size={24} />
-          ),
-        }}
-      />
-    </Tabs>
-  );
+  const segment = useSegments();
+  const page = segment[segment.length - 1];
+  const pagesToHideTabBar = ["edit-schedule", "settings"];
+
+  if (user) {
+    return (
+      <Tabs
+        screenOptions={({ route }) => ({
+          //Rendering the icons for the tab bar based on the routes
+          tabBarIcon: ({ color }) => {
+            let iconName: string;
+            let iconLibrary: IconProps["library"];
+
+            switch (route.name) {
+              case "home":
+                [iconName, iconLibrary] = ["house-chimney", "FontAwesome6"];
+                break;
+              case "workouts":
+                [iconName, iconLibrary] = [
+                  "dumbbell",
+                  "MaterialCommunityIcons",
+                ];
+                break;
+              case "feed":
+                [iconName, iconLibrary] = ["newspaper", "FontAwesome6"];
+                break;
+              case "profile":
+                [iconName, iconLibrary] = ["user", "FontAwesome"];
+                break;
+              default:
+                [iconName, iconLibrary] = ["question", "AntDesign"];
+                break;
+            }
+            return (
+              <Icon
+                library={iconLibrary}
+                name={iconName}
+                color={color}
+                size={25}
+              />
+            );
+          },
+          //Rendering the buttons that are going to wrap each tab item
+          tabBarButton: (props) => {
+            return (
+              <TouchableRipple style={{ flex: 1 }} borderless {...props}>
+                {props.children}
+              </TouchableRipple>
+            );
+          },
+          tabBarStyle: {
+            ...styles.tabBar,
+            display: pagesToHideTabBar.includes(page) ? "none" : "flex", // Hide tab bar for listed routes
+            backgroundColor: theme.colors.surface,
+          },
+          tabBarLabelStyle: styles.tabBarItemLabel,
+          tabBarItemStyle: styles.tabBarItem,
+          tabBarActiveTintColor: theme.colors.primary,
+          tabBarInactiveTintColor: theme.colors.outline,
+        })}
+      >
+        <Tabs.Screen
+          name="home"
+          options={{
+            title: "Home",
+            headerShown: false,
+          }}
+        />
+        <Tabs.Screen
+          name="workouts"
+          options={{
+            title: "Workouts",
+            headerShown: false,
+          }}
+        />
+        <Tabs.Screen
+          name="feed"
+          options={{
+            title: "Feed",
+            headerShown: false,
+          }}
+        />
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: "Profile",
+            headerShown: false,
+          }}
+        />
+      </Tabs>
+    );
   } else {
-    <Redirect href="/(auth)/sign-in"/>
+    <Redirect href="/(auth)/sign-in" />;
   }
 }
 
-const style = StyleSheet.create({
-  navigator: {
-    height: 70,
+const styles = StyleSheet.create({
+  tabBar: {
+    height: Platform.OS === "ios" ? 100 : 70,
+    borderTopWidth: 0,
+    shadowColor: "black",
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    overflow: "hidden",
+  },
+  tabBarItem: {
+    flexDirection: "column",
+    overflow: "visible",
+    padding: 5,
+  },
+  tabBarItemLabel: {
+    fontFamily: "ProtestStrike",
+    fontSize: 12,
   },
 });

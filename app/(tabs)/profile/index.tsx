@@ -4,12 +4,15 @@ import { FirebaseContext } from "@/providers/FirebaseProvider";
 import useFirebase from "@/utils/hooks/useFirebase";
 import { Link, router } from "expo-router";
 import { useContext } from "react";
-import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Platform, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { Avatar, Button, List, Text, useTheme } from "react-native-paper";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
+  
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
+
   const { signOut } = useFirebase();
   const { user } = useContext(FirebaseContext)
 
@@ -28,11 +31,19 @@ export default function ProfileScreen() {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
-  }).replace(/\//g, '.');;
+  }).replace(/\//g, '.');
 
 
   return (
-    <SafeAreaView style={style.safeArea}>
+    <View
+      style={{
+        ...style.safeArea,
+        paddingTop: insets.top,
+        paddingRight: insets.right,
+        paddingLeft: insets.left,
+        paddingBottom: Platform.OS === "android" ? insets.bottom : 0,
+      }}
+    >
       <ScrollView
         contentContainerStyle={style.mainContainer}
         showsVerticalScrollIndicator={false}
@@ -182,11 +193,11 @@ export default function ProfileScreen() {
           onPress={handleSignOut}
         >
           <Text variant="titleMedium" style={style.logoutText}>
-            LOGOUT
+            SIGN OUT
           </Text>{" "}
         </Button>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

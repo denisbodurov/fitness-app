@@ -2,7 +2,7 @@ import Exercise from "@/components/Exercise";
 import FunctionalHeader from "@/components/FunctionalHeader";
 import RestPicker from "@/components/RestPicker";
 import React, { useState } from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
+import { View, StyleSheet, ScrollView, Platform } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
 import {
   useTheme,
@@ -11,27 +11,46 @@ import {
   Button,
   SegmentedButtons,
 } from "react-native-paper";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 const WorkoutForm = () => {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
 
   const [title, setTitle] = useState("");
-  const [value, setValue] = useState("");
   const [isFocus, setIsFocus] = useState(false);
+
+  const [plan, setPlan] = useState({
+    title: "",
+    difficulty: 1,
+    repRest: "",
+    setRest: "",
+    exercises: [],
+  });
 
   const handleTitleChange = (text: string) => {
     setTitle(text);
   };
 
   const data = [
-    { label: "BEGINNER", value: "beginner" },
-    { label: "INTERMEDIATE", value: "intermediate" },
-    { label: "ADVANCED", value: "advanced" },
+    { label: "BEGINNER", value: "1" },
+    { label: "INTERMEDIATE", value: "2" },
+    { label: "ADVANCED", value: "3" },
   ];
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View
+      style={{
+        ...styles.safeArea,
+        paddingTop: insets.top,
+        paddingRight: insets.right,
+        paddingLeft: insets.left,
+        paddingBottom: Platform.OS === "android" ? insets.bottom : 0,
+      }}
+    >
       <FunctionalHeader
         title=""
         onSave={() => console.log("Saved")}
@@ -76,34 +95,54 @@ const WorkoutForm = () => {
           }}
           placeholder={!isFocus ? "Select Difficulty" : "..."}
           searchPlaceholder="Search..."
-          value={value}
+          value={plan.difficulty.toString()}
           onFocus={() => setIsFocus(true)}
           onBlur={() => setIsFocus(false)}
           onChange={(item) => {
-            setValue(item.value);
+            setPlan({ ...plan, difficulty: parseInt(item.value) });
             setIsFocus(false);
           }}
         />
-        
+
         <View style={styles.group}>
-          <Text variant="titleMedium" style={styles.subTitle}>REST BETWEEN REPS</Text>
-          <RestPicker value={value} onValueChange={setValue} theme={theme}/>
+          <Text variant="titleMedium" style={styles.subTitle}>
+            REST BETWEEN REPS
+          </Text>
+          <RestPicker
+            value={plan.repRest}
+            onValueChange={(value) =>
+              setPlan({ ...plan, repRest: value.toString() })
+            }
+            theme={theme}
+          />
         </View>
         <View style={styles.group}>
-          <Text variant="titleMedium" style={styles.subTitle}>REST BETWEEN EXERCISES</Text>
-          <RestPicker value={value} onValueChange={setValue} theme={theme}/>
+          <Text variant="titleMedium" style={styles.subTitle}>
+            REST BETWEEN EXERCISES
+          </Text>
+          <RestPicker
+            value={plan.setRest}
+            onValueChange={(value) =>
+              setPlan({ ...plan, setRest: value.toString() })
+            }
+            theme={theme}
+          />
         </View>
         <Button style={styles.button} mode="contained">
-          ADD WORKOUT
+          <Text
+            variant="titleMedium"
+            style={{ ...styles.buttonText, color: theme.colors.onPrimary }}
+          >
+            ADD EXERCISE
+          </Text>
         </Button>
         <View style={styles.group}>
-          <Exercise/>
-          <Exercise/>
-          <Exercise/>
+          <Exercise />
+          <Exercise />
+          <Exercise />
         </View>
-        
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -115,7 +154,7 @@ const styles = StyleSheet.create({
     fontFamily: "ProtestStrike",
   },
   subTitle: {
-    fontFamily: "ProtestStrike"
+    fontFamily: "ProtestStrike",
   },
   container: {
     flexDirection: "column",
@@ -124,7 +163,7 @@ const styles = StyleSheet.create({
   },
   group: {
     flexDirection: "column",
-    gap: 10
+    gap: 10,
   },
   formContainer: {
     flexDirection: "column",
@@ -152,6 +191,9 @@ const styles = StyleSheet.create({
   button: {
     width: "100%",
     borderRadius: 10,
+  },
+  buttonText: {
+    fontFamily: "ProtestStrike",
   },
   icon: {
     marginRight: 5,

@@ -21,11 +21,12 @@ function FeedLayout() {
         name="index"
         options={{
           headerShown: false,
-          contentStyle: { backgroundColor: theme.colors.background },
+          contentStyle: { backgroundColor: theme.colors.background},
         }}
       />
       <Stack.Screen
         name="edit-schedule"
+        
         options={{
           headerShown: false,
           contentStyle: { backgroundColor: theme.colors.background },

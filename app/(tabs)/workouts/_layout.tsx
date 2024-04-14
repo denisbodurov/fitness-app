@@ -1,4 +1,3 @@
-import WorkoutProvider from "@/providers/WorkoutProvider";
 import { StackActions } from "@react-navigation/native";
 import { Stack, useFocusEffect, useNavigation } from "expo-router";
 import { useCallback } from "react";
@@ -38,7 +37,14 @@ function WorkoutsLayout() {
         }}
       />
       <Stack.Screen
-        name="(manage_workouts)"
+        name="create-workout"
+        options={{
+          headerShown: false,
+          contentStyle: { backgroundColor: theme.colors.background },
+        }}
+      />
+      <Stack.Screen
+        name="edit-workout"
         options={{
           headerShown: false,
           contentStyle: { backgroundColor: theme.colors.background },

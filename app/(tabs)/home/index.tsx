@@ -1,9 +1,9 @@
 import Icon from "@/components/Icon";
 import { useEffect, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { ScrollView } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import WorkoutList from "@/components/WorkoutList";
 import Schedule from "@/components/Schedule";
 import { ScheduleData } from "@/types/components/Schedule";
@@ -16,9 +16,11 @@ export default function HomeScreen() {
   const [defaultWorkouts, setDefaultWorkouts] = useState("");
   const [dailyProgress, setDailyProgress] = useState();
 
+  const insets = useSafeAreaInsets();
+
   const theme = useTheme();
 
-  const mockData : WorkoutData[] = [
+  const mockData: WorkoutData[] = [
     {
       type: "arms",
       title: "ARMS WORKOUT",
@@ -45,8 +47,8 @@ export default function HomeScreen() {
   const mockStats = {
     workouts: 12,
     calories: 1204,
-    minutes: 120
-  }
+    minutes: 120,
+  };
 
   useEffect(() => {
     try {
@@ -58,12 +60,19 @@ export default function HomeScreen() {
   }, []);
 
   return (
-    //Wrapping the home screen in safe area view
-    <SafeAreaView style={style.safeArea}>
-      {/* ScrollView that contains all of the home screen elements */}
+    <View
+      style={{
+        ...style.safeArea,
+        paddingTop: insets.top,
+        paddingRight: insets.right,
+        paddingLeft: insets.left,
+        paddingBottom: Platform.OS === "android" ? insets.bottom : 0,
+      }}
+    >
       <ScrollView
         contentContainerStyle={{
           ...style.body,
+
           backgroundColor: theme.colors.background,
         }}
         showsVerticalScrollIndicator={false}
@@ -87,7 +96,7 @@ export default function HomeScreen() {
               backgroundColor: theme.colors.surface,
             }}
           >
-            <Progress data={mockStats} theme={theme}/>
+            <Progress data={mockStats} theme={theme} />
           </View>
         </View>
         {/* Data container that provides info about the user's weekly workout schedule */}
@@ -128,7 +137,7 @@ export default function HomeScreen() {
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

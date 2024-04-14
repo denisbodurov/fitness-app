@@ -3,7 +3,7 @@ import { UnsavedChangesDialogProps } from "@/types/components/UnsavedChanges";
 import { useState } from "react";
 import { TextInput, Button, Dialog, Portal, Text } from "react-native-paper";
 import { StyleSheet } from "react-native";
-
+import ScrollPicker from "react-native-wheel-scrollview-picker";
 export default function WeightHeightDateOfBirthDialog({
   value,
   visible,
@@ -17,6 +17,7 @@ export default function WeightHeightDateOfBirthDialog({
   const unit = type === "weight" ? "kg" : type === "height" ? "cm" : "";
   const label = `${type.charAt(0).toUpperCase() + type.slice(1)} ${unit}`;
 
+
   return (
     <Portal>
       <Dialog style={{backgroundColor: theme.colors.surface}} visible={visible} onDismiss={onCancel}>
@@ -27,8 +28,8 @@ export default function WeightHeightDateOfBirthDialog({
               label={label}
               value={value}
               right={<Text variant="titleSmall">kg</Text>}
-              onChangeText={onChange}
-              keyboardType={type === "weight" ? "numeric" : "default"}
+              onChangeText={(text) => onChange(text)}
+              keyboardType="numeric"
               maxLength={type === "weight" ? 3 : type === "height" ? 4 : 0} // Adjust max length
             />
         </Dialog.Content>

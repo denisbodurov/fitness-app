@@ -1,13 +1,22 @@
 import { router } from "expo-router";
-import { StyleSheet, View } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import { IconButton, Text, useTheme } from "react-native-paper";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ModalScreen() {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View
+      style={{
+        ...styles.safeArea,
+        paddingTop: insets.top,
+        paddingRight: insets.right,
+        paddingLeft: insets.left,
+        paddingBottom: Platform.OS === "android" ? insets.bottom : 0,
+      }}
+    >
       {/* Header */}
       <View style={{ ...styles.header, backgroundColor: theme.colors.surface }}>
         <View style={styles.leftContainer}>
@@ -28,7 +37,7 @@ export default function ModalScreen() {
         </Text>
         <View style={styles.rightContainer} />
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

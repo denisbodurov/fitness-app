@@ -3,7 +3,7 @@ import { MD3Theme } from "react-native-paper";
 export interface PickerDialogProps {
   value?: string;
   visible: boolean;
-  onChange?: () => void;
+  onChange: (text?: string) => void;
   onConfirm: () => void;
   onCancel: () => void;
   type: "weight" | "height";

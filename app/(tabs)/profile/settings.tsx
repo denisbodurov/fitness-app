@@ -1,36 +1,98 @@
 import Icon from "@/components/Icon";
 import UnsavedChangesDialog from "@/components/UnsavedChangesDialog";
 import { router } from "expo-router";
-import React, { useState, useEffect } from "react";
-import { View, StyleSheet, TouchableOpacity } from "react-native";
+import React, { useState, useEffect, useContext } from "react";
+import { View, StyleSheet, TouchableOpacity, Platform } from "react-native";
 import {
   Text,
-  IconButton,
-  Button,
   useTheme,
-  PaperProvider,
+  ActivityIndicator,
+  Snackbar,
 } from "react-native-paper";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import PickerDialog from "@/components/PickerDialog";
-import DateTimePicker, {
-  DateTimePickerAndroid,
-} from "@react-native-community/datetimepicker";
+import { DatePickerModal } from "react-native-paper-dates";
 import FunctionalHeader from "@/components/FunctionalHeader";
+import { en, registerTranslation } from "react-native-paper-dates";
+import { Settings } from "@/types/states/Settings";
+import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebase-config";
+import { collection, doc, getDoc, updateDoc } from "firebase/firestore";
+
+registerTranslation("en", en);
 
 function SettingsScreen() {
   const theme = useTheme();
-  const [value, setValue] = React.useState("");
+  const insets = useSafeAreaInsets();
+
   const [dialogStates, setDialogStates] = useState({
     weightDialog: false,
     heightDialog: false,
     dateOfBirthDialog: false,
     backActionDialog: false,
   });
-  const [settings, setSettings] = useState({
-    dateOfBirth: "",
+
+  const [initialSettings, setInitialSettings] = useState<Settings>({
+    dateOfBirth: new Date(),
     weight: "",
     height: "",
   });
+
+  const [settings, setSettings] = useState(initialSettings);
+
+  const [hasChanged, setHasChanged] = useState(false);
+
+  const [status, setStatus] = useState({
+    isLoading: true,
+    error: "",
+  });
+
+  //Fetch the data for weight, height and DOB of the current user from Firestore
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        // Get the current user
+        const currentUser = FIREBASE_AUTH.currentUser;
+
+        if (currentUser) {
+          // Get the UID of the current user
+          const uid = currentUser.uid;
+
+          // Reference to the users collection
+          const usersRef = collection(FIREBASE_DB, "users");
+
+          // Query for the current user's document
+          const userDoc = doc(usersRef, uid);
+
+          // Fetch the document snapshot
+          const userDocSnapshot = await getDoc(userDoc);
+
+          if (userDocSnapshot.exists()) {
+            const userData = userDocSnapshot.data();
+
+            setInitialSettings({
+              dateOfBirth: userData.dob.toDate(),
+              weight: userData.weight.toString(),
+              height: userData.height.toString(),
+            });
+            setSettings(initialSettings)
+          } else {
+            setStatus({ ...status, error: "RESOURCE NOT FOUND" });
+          }
+        } else {
+          setStatus({ ...status, error: "AUTH SESSION NOT FOUND" });
+        }
+      } catch (error) {
+        setStatus({ ...status, error: `FAILED FETCHING DATA: ${error}` });
+      } finally {
+        setStatus((prevStatus) => {
+          return { ...prevStatus, isLoading: false };
+        });
+      }
+    };
+
+    // Call the function to fetch user data when component mounts
+    fetchUserData();
+  }, []); // Empty dependency array ensures this effect runs only once after the component mounts
 
   const showDialogue = (dialogType: string) => {
     setDialogStates((prevStates) => ({
@@ -39,147 +101,267 @@ function SettingsScreen() {
     }));
   };
 
-  const handleStay = (dialogType: string) => {
+  const handleConfirm = (dialogType: string, settingType: keyof Settings) => {
     setDialogStates((prevStates) => ({
       ...prevStates,
       [dialogType]: false,
+    }));
+    setInitialSettings({
+      ...initialSettings,
+      [settingType]: settings[settingType],
+    });
+    setHasChanged(true);
+  };
+
+  const handleBack = () => {
+    router.back();
+  };
+
+  const handleStay = () => {
+    setDialogStates((prevStates) => ({
+      ...prevStates,
+      backActionDialog: false,
     }));
   };
 
   const handleDismiss = (dialogType: string) => {
     setDialogStates((prevStates) => {
-      if (dialogType === "backActionDialog") {
-        router.back();
-      }
       return { ...prevStates, [dialogType]: false };
     });
+    setSettings(initialSettings);
   };
 
+  const handleChange = (settingType: string, value: string | undefined) => {
+    if (value) {
+      value.replace(/[^0-9]/g, "");
+      setSettings({ ...settings, [settingType]: value || "" });
+    } else {
+      setSettings({ ...settings, [settingType]: "" });
+    }
+  };
+
+  const handleSave = async () => {
+    setStatus({ ...status, isLoading: true });
+    try {
+      const currentUser = FIREBASE_AUTH.currentUser;
+
+      if (currentUser) {
+        const uid = currentUser.uid;
+        const usersRef = collection(FIREBASE_DB, "users");
+        const userDoc = doc(usersRef, uid);
+        const updateData = {
+          height: parseInt(initialSettings.height),
+          weight: parseInt(initialSettings.weight),
+          dob: initialSettings.dateOfBirth,
+        };
+
+        await updateDoc(userDoc, updateData);
+        console.log("Success");
+        setHasChanged(false);
+      }
+    } catch {
+      console.log("error");
+    } finally {
+      setStatus((prevStatus) => {
+        return { ...prevStatus, isLoading: false };
+      });
+    }
+  };
+
+  const formattedDate = initialSettings.dateOfBirth.toLocaleDateString(
+    "en-GB",
+    {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }
+  );
+
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View
+      style={{
+        ...styles.safeArea,
+        paddingTop: insets.top,
+        paddingRight: insets.right,
+        paddingLeft: insets.left,
+        paddingBottom: Platform.OS === "android" ? insets.bottom : 0,
+      }}
+    >
       {/* Header */}
-      <FunctionalHeader title="Settings" onSave={() => console.log("Saved")} onBack={() => showDialogue("backActionDialog")}/>
+      <FunctionalHeader
+        title="Settings"
+        onSave={() => handleSave()}
+        onBack={() =>
+          hasChanged ? showDialogue("backActionDialog") : router.back()
+        }
+      />
+
       <UnsavedChangesDialog
         visible={dialogStates.backActionDialog}
-        onStay={() => handleStay("backActionDialog")}
-        onDismiss={() => handleDismiss("backActionDialog")}
+        onStay={() => handleStay()}
+        onDismiss={() => handleBack()}
         theme={theme}
       />
       <PickerDialog
         visible={dialogStates.heightDialog}
-        onConfirm={() => handleStay("heightDialog")}
+        onConfirm={() => handleConfirm("heightDialog", "height")}
+        value={settings.height}
+        onChange={(value) => {
+          handleChange("height", value);
+        }}
         onCancel={() => handleDismiss("heightDialog")}
         type="height"
         theme={theme}
       />
       <PickerDialog
         visible={dialogStates.weightDialog}
-        onConfirm={() => handleStay("weightDialog")}
+        onConfirm={() => handleConfirm("weightDialog", "weight")}
         onCancel={() => handleDismiss("weightDialog")}
+        value={settings.weight}
+        onChange={(value) => {
+          handleChange("weight", value);
+        }}
         type="weight"
         theme={theme}
       />
-      {dialogStates.dateOfBirthDialog && (
-        <DateTimePicker
-          mode="date"
-          display="spinner"
-          maximumDate={new Date()}
-          onChange={(event) =>
-            event.type === "set"
-              ? handleStay("dateOfBirthDialog")
-              : handleDismiss("dateOfBirthDialog")
-          }
-          value={new Date()}
-          key={theme.colors.surface}
-          positiveButton={{ textColor: theme.colors.primary }}
-          negativeButton={{ textColor: "red" }}
-        />
+
+      <DatePickerModal
+        presentationStyle="overFullScreen"
+        locale="en"
+        mode="single"
+        onChange={(value) => {
+          if (value.date)
+            setSettings({ ...settings, dateOfBirth: new Date(value.date) });
+        }}
+        visible={dialogStates.dateOfBirthDialog}
+        onDismiss={() => handleDismiss("dateOfBirthDialog")}
+        date={initialSettings.dateOfBirth}
+        onConfirm={() => handleConfirm("dateOfBirthDialog", "dateOfBirth")}
+      />
+
+      {status.isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" style={styles.loadingIndicator} />
+        </View>
+      ) : (
+        <View style={styles.listContainer}>
+          {/* Height */}
+          <View style={styles.listItem}>
+            <View style={styles.listItemGroup}>
+              <Icon
+                library="MaterialCommunityIcons"
+                name="human-male-height"
+                color={theme.colors.outline}
+              />
+              <Text variant="titleMedium" style={styles.itemTitle}>
+                HEIGHT
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={{
+                ...styles.selectField,
+                borderColor: theme.colors.outline,
+              }}
+              activeOpacity={0.8}
+              onPress={() => showDialogue("heightDialog")}
+            >
+              <Text variant="titleMedium">
+                {initialSettings.height || 0} cm
+              </Text>
+              <Icon
+                library="Entypo"
+                name="triangle-down"
+                color={theme.colors.outline}
+                size={20}
+              />
+            </TouchableOpacity>
+          </View>
+          {/* Weight */}
+          <View style={styles.listItem}>
+            <View style={styles.listItemGroup}>
+              <Icon
+                library="MaterialCommunityIcons"
+                name="weight"
+                color={theme.colors.outline}
+              />
+              <Text variant="titleMedium" style={styles.itemTitle}>
+                WEIGHT
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={{
+                ...styles.selectField,
+                borderColor: theme.colors.outline,
+              }}
+              activeOpacity={0.8}
+              onPress={() => showDialogue("weightDialog")}
+            >
+              <Text variant="titleMedium">
+                {initialSettings.weight || 0} kg
+              </Text>
+              <Icon
+                library="Entypo"
+                name="triangle-down"
+                color={theme.colors.outline}
+                size={20}
+              />
+            </TouchableOpacity>
+          </View>
+          {/*Date of birth*/}
+          <View style={styles.listItem}>
+            <View style={styles.listItemGroup}>
+              <Icon
+                library="MaterialCommunityIcons"
+                name="calendar"
+                color={theme.colors.outline}
+              />
+              <Text variant="titleMedium" style={styles.itemTitle}>
+                DATE OF BIRTH
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={{
+                ...styles.selectField,
+                borderColor: theme.colors.outline,
+              }}
+              activeOpacity={0.8}
+              onPress={() => showDialogue("dateOfBirthDialog")}
+            >
+              <Text variant="titleMedium">{formattedDate}</Text>
+              <Icon
+                library="Entypo"
+                name="triangle-down"
+                color={theme.colors.outline}
+                size={20}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
       )}
 
-      <View style={styles.listContainer}>
-        {/* Height */}
-        <View style={styles.listItem}>
-          <View style={styles.listItemGroup}>
-            <Icon
-              library="MaterialCommunityIcons"
-              name="human-male-height"
-              color={theme.colors.outline}
-            />
-            <Text>Height:</Text>
-          </View>
-          <TouchableOpacity
-            style={{
-              ...styles.selectField,
-              borderColor: theme.colors.outline,
-            }}
-            activeOpacity={0.8}
-            onPress={() => showDialogue("heightDialog")}
+      {status.error && (
+        <Snackbar
+          visible={status.error ? true : false}
+          onDismiss={() => setStatus( (prevStatus) => { return {...prevStatus, error: ""}})}
+          style={{ backgroundColor: theme.colors.errorContainer }}
+          duration={3000}
+          action={{
+            label: "DISMISS",
+            labelStyle: {
+              color: theme.colors.onBackground,
+              fontFamily: "ProtestStrike"
+            }
+          }}
+        >
+          <Text
+            variant="titleMedium"
+            style={{ color: theme.colors.onErrorContainer, fontFamily: "ProtestStrike" }}
           >
-            <Text variant="titleMedium">183cm</Text>
-            <Icon
-              library="Entypo"
-              name="triangle-down"
-              color={theme.colors.outline}
-              size={20}
-            />
-          </TouchableOpacity>
-        </View>
-        {/* Weight */}
-        <View style={styles.listItem}>
-          <View style={styles.listItemGroup}>
-            <Icon
-              library="MaterialCommunityIcons"
-              name="weight"
-              color={theme.colors.outline}
-            />
-            <Text>Weight:</Text>
-          </View>
-          <TouchableOpacity
-            style={{
-              ...styles.selectField,
-              borderColor: theme.colors.outline,
-            }}
-            activeOpacity={0.8}
-            onPress={() => showDialogue("weightDialog")}
-          >
-            <Text variant="titleMedium">67kg</Text>
-            <Icon
-              library="Entypo"
-              name="triangle-down"
-              color={theme.colors.outline}
-              size={20}
-            />
-          </TouchableOpacity>
-        </View>
-        {/*Date of birth*/}
-        <View style={styles.listItem}>
-          <View style={styles.listItemGroup}>
-            <Icon
-              library="MaterialCommunityIcons"
-              name="calendar"
-              color={theme.colors.outline}
-            />
-            <Text>Date of Birth</Text>
-          </View>
-          <TouchableOpacity
-            style={{
-              ...styles.selectField,
-              borderColor: theme.colors.outline,
-            }}
-            activeOpacity={0.8}
-            onPress={() => showDialogue("dateOfBirthDialog")}
-          >
-            <Text variant="titleMedium">01/27/2005</Text>
-            <Icon
-              library="Entypo"
-              name="triangle-down"
-              color={theme.colors.outline}
-              size={20}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-    </SafeAreaView>
+            {status.error}
+          </Text>
+        </Snackbar>
+      )}
+    </View>
   );
 }
 
@@ -196,6 +378,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+  },
+  itemTitle: {
+    fontFamily: "ProtestStrike",
   },
   listItemGroup: {
     flexDirection: "row",
@@ -219,6 +404,15 @@ const styles = StyleSheet.create({
   separator: {
     borderBottomWidth: 2,
     width: "100%",
+  },
+  loadingIndicator: {
+    alignSelf: "center",
+  },
+  loadingContainer: {
+    flex: 1,
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
 
