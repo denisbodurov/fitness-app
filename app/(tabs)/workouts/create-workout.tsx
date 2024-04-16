@@ -4,17 +4,8 @@ import RestPicker from "@/components/RestPicker";
 import React, { useState } from "react";
 import { View, StyleSheet, ScrollView, Platform } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
-import {
-  useTheme,
-  Text,
-  TextInput,
-  Button,
-  SegmentedButtons,
-} from "react-native-paper";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { useTheme, Text, TextInput, Button } from "react-native-paper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const WorkoutForm = () => {
   const theme = useTheme();
