@@ -5,15 +5,6 @@ import { useTheme } from "react-native-paper";
 
 function FeedLayout() {
   const theme = useTheme();
-  // const navigation = useNavigation()
-
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     return () => {
-  //         navigation.dispatch(StackActions.popToTop());
-  //     };
-  //   }, [navigation])
-  // );
 
   return (
     <Stack>

@@ -12,7 +12,7 @@ export default function TabLayout() {
 
   const segment = useSegments();
   const page = segment[segment.length - 1];
-  const pagesToHideTabBar = ["edit-schedule", "settings"];
+  const pagesToHideTabBar = ["edit-schedule", "settings", "create-workout", "edit-workout"];
 
   if (user) {
     return (
