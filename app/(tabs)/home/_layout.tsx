@@ -1,6 +1,4 @@
-import { StackActions, useNavigation } from "@react-navigation/native";
-import { Stack, useFocusEffect } from "expo-router";
-import { useCallback } from "react";
+import { Stack } from "expo-router";
 import { useTheme } from "react-native-paper";
 
 function FeedLayout() {
@@ -12,12 +10,11 @@ function FeedLayout() {
         name="index"
         options={{
           headerShown: false,
-          contentStyle: { backgroundColor: theme.colors.background},
+          contentStyle: { backgroundColor: theme.colors.background },
         }}
       />
       <Stack.Screen
         name="edit-schedule"
-        
         options={{
           headerShown: false,
           contentStyle: { backgroundColor: theme.colors.background },

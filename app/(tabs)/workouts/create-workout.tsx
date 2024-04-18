@@ -1,29 +1,151 @@
+import ChooseExercise from "@/components/ChooseExercise";
 import Exercise from "@/components/Exercise";
 import FunctionalHeader from "@/components/FunctionalHeader";
 import RestPicker from "@/components/RestPicker";
-import React, { useState } from "react";
+import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebase-config";
+import { ExerciseState } from "@/types/states/Exercise";
+import { WorkoutPlan } from "@/types/states/Plan";
+import { router, useNavigation } from "expo-router";
+import { collection, doc, getDoc, getDocs, updateDoc } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
 import { View, StyleSheet, ScrollView, Platform } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
-import { useTheme, Text, TextInput, Button } from "react-native-paper";
+import {
+  useTheme,
+  Text,
+  TextInput,
+  Button,
+  Portal,
+  Modal,
+  Dialog,
+  IconButton,
+} from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const WorkoutForm = () => {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
 
-  const [title, setTitle] = useState("");
   const [isFocus, setIsFocus] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const [selectedExercise, setSelectedExercise] = useState<ExerciseState>();
+  const [availableExercises, setAvailableExercises] = useState<ExerciseState[]>(
+    []
+  );
+  const [currentOrder, setCurrentOrder] = useState<number>(1);
+  const [sets, setSets] = useState("");
+  const [reps, setReps] = useState("");
 
-  const [plan, setPlan] = useState({
+  const [plan, setPlan] = useState<WorkoutPlan>({
     title: "",
     difficulty: 1,
-    repRest: "",
-    setRest: "",
+    setRest: 30,
+    exerciseRest: 30,
     exercises: [],
   });
 
+  useEffect(() => {
+    const fetchExercises = async () => {
+      try {
+        const exercisesRef = collection(FIREBASE_DB, "exercises");
+        const snapshot = await getDocs(exercisesRef);
+        const exercisesData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          name: doc.data().name,
+          description: doc.data().description,
+          difficulty: doc.data().difficulty,
+          imageURL: doc.data().imageURL,
+          videoURL: doc.data().videoURL,
+          target: doc.data().target,
+        }));
+
+        setAvailableExercises(exercisesData);
+        console.log(availableExercises);
+      } catch (error) {
+        console.error("Error fetching exercises:", error);
+      }
+    };
+
+    fetchExercises();
+  }, []);
+
   const handleTitleChange = (text: string) => {
-    setTitle(text);
+    setPlan({ ...plan, title: text });
+  };
+
+  const handleSetRepChange = (type: string, value: string | undefined) => {
+    if (value) {
+      value = value.replace(/[^0-9]/g, "");
+      type === "reps" ? setReps(value) : setSets(value);
+    } else {
+      type === "reps" ? setReps("") : setSets("");
+    }
+  };
+
+  const handleSelectExercise = (data: ExerciseState) => {
+    setDialogVisible(true);
+    setSelectedExercise(data);
+  };
+
+  const handleRemove = (order: number) => {
+    const filteredExercises = plan.exercises.filter(exercise => exercise.order !== order);
+    filteredExercises.forEach(exercise => {
+      if (exercise.order! > order) {
+        exercise.order! -= 1;
+      }
+    });
+    setCurrentOrder(prevOrder => prevOrder - 1);
+
+    setPlan({ ...plan, exercises: filteredExercises });
+  }
+
+  const addExercise = () => {
+    if (selectedExercise && sets && reps) {
+      setPlan({
+        ...plan,
+        exercises: [
+          ...plan.exercises,
+          {
+            ...selectedExercise,
+            order: currentOrder,
+            sets: parseInt(sets),
+            reps: parseInt(reps),
+          },
+        ],
+      });
+      setSets("");
+      setReps("");
+      setDialogVisible(false);
+      setModalVisible(false);
+      setCurrentOrder((prevOrder) => prevOrder + 1);
+      console.log(plan.exercises);
+    }
+  };
+
+  const handleSave = async () => {
+
+    try {
+      const currentUser = FIREBASE_AUTH.currentUser;
+
+      if(currentUser) {
+        const uid = currentUser.uid;
+        const userRef = doc(FIREBASE_DB, "users", uid); // Reference the user document
+        const userDoc = await getDoc(userRef); // Fetch the user document
+    
+        // Update the workouts array within the user document
+        if(userDoc.exists()) {
+          await updateDoc(userRef, {
+            workouts: [...userDoc.data().workouts, plan], // Add the new plan to the workouts array
+          });
+          console.log("Workout saved successfully!");
+        } else {
+
+        }
+      }
+    } catch (error) {
+      console.error("Error saving workout:", error);
+    }
   };
 
   const data = [
@@ -44,15 +166,15 @@ const WorkoutForm = () => {
     >
       <FunctionalHeader
         title=""
-        onSave={() => console.log("Saved")}
-        onBack={() => console.log("YAy")}
+        onSave={handleSave}
+        onBack={() => router.back()}
       />
       <ScrollView contentContainerStyle={styles.container}>
         <Text variant="headlineSmall" style={styles.title}>
           CREATE WORKOUT PLAN
         </Text>
         <TextInput
-          value={title}
+          value={plan.title}
           contentStyle={styles.textInput}
           placeholder="Title"
           underlineColor={theme.colors.primary}
@@ -97,12 +219,12 @@ const WorkoutForm = () => {
 
         <View style={styles.group}>
           <Text variant="titleMedium" style={styles.subTitle}>
-            REST BETWEEN REPS
+            REST BETWEEN SETS
           </Text>
           <RestPicker
-            value={plan.repRest}
+            value={plan.exerciseRest.toString()}
             onValueChange={(value) =>
-              setPlan({ ...plan, repRest: value.toString() })
+              setPlan({ ...plan, exerciseRest: parseInt(value.toString()) })
             }
             theme={theme}
           />
@@ -112,14 +234,18 @@ const WorkoutForm = () => {
             REST BETWEEN EXERCISES
           </Text>
           <RestPicker
-            value={plan.setRest}
+            value={plan.setRest.toString()}
             onValueChange={(value) =>
-              setPlan({ ...plan, setRest: value.toString() })
+              setPlan({ ...plan, setRest: parseInt(value.toString()) })
             }
             theme={theme}
           />
         </View>
-        <Button style={styles.button} mode="contained">
+        <Button
+          style={styles.button}
+          mode="contained"
+          onPress={() => setModalVisible(true)}
+        >
           <Text
             variant="titleMedium"
             style={{ ...styles.buttonText, color: theme.colors.onPrimary }}
@@ -128,10 +254,87 @@ const WorkoutForm = () => {
           </Text>
         </Button>
         <View style={styles.group}>
-          <Exercise />
-          <Exercise />
-          <Exercise />
+          {plan.exercises.map((exercise) => (
+            <Exercise
+              key={exercise.order}
+              name={exercise.name}
+              information={`${exercise.sets}x${exercise.reps}`}
+              order={exercise.order!}
+              onRemove={(order) => handleRemove(order)}
+              theme={theme}
+            />
+          ))}
         </View>
+
+        <Portal>
+          <Modal
+            visible={modalVisible}
+            onDismiss={() => setModalVisible(false)}
+            contentContainerStyle={{
+              ...styles.modal,
+              backgroundColor: theme.colors.surface,
+            }}
+          >
+            <View
+              style={{
+                ...styles.header,
+                backgroundColor: theme.colors.surface,
+              }}
+            >
+              <IconButton
+                icon="close"
+                size={30}
+                iconColor={theme.colors.onSurface}
+                rippleColor={"rgba(125,125,125,0.2)"}
+                onPress={() => setModalVisible(false)}
+              />
+            </View>
+            <ScrollView contentContainerStyle={styles.modalScroll}>
+              {availableExercises.map((exercise) => (
+                <ChooseExercise
+                  key={exercise.id}
+                  data={exercise}
+                  name={exercise.name}
+                  onPress={(data) => handleSelectExercise(data)}
+                  theme={theme}
+                />
+              ))}
+            </ScrollView>
+          </Modal>
+        </Portal>
+        <Portal>
+          <Dialog
+            visible={dialogVisible}
+            style={{ backgroundColor: theme.colors.surface }}
+            onDismiss={() => setDialogVisible(false)}
+          >
+            <Dialog.Content>
+              <View style={styles.dialogContentContainer}>
+                <View style={styles.dialogInputContainer}>
+                  <Text variant="titleMedium">SETS: </Text>
+                  <TextInput
+                    value={sets}
+                    onChangeText={(text) => handleSetRepChange("sets", text)}
+                    maxLength={2}
+                    keyboardType="numeric"
+                  />
+                </View>
+                <View style={styles.dialogInputContainer}>
+                  <Text variant="titleMedium">REPS: </Text>
+                  <TextInput
+                    value={reps}
+                    onChangeText={(text) => handleSetRepChange("reps", text)}
+                    maxLength={2}
+                    keyboardType="numeric"
+                  />
+                </View>
+              </View>
+            </Dialog.Content>
+            <Dialog.Actions>
+              <Button onPress={addExercise}>Confirm</Button>
+            </Dialog.Actions>
+          </Dialog>
+        </Portal>
       </ScrollView>
     </View>
   );
@@ -140,6 +343,36 @@ const WorkoutForm = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+  },
+  modal: {
+    justifyContent: "flex-start",
+    flex: 1,
+    height: "100%",
+  },
+  modalScroll: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "space-around",
+    gap: 5,
+    flexWrap: "wrap",
+    padding: 20,
+  },
+  header: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    height: 60,
+    padding: 10,
+  },
+  dialogContentContainer: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  dialogInputContainer: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
   },
   title: {
     fontFamily: "ProtestStrike",

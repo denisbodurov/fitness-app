@@ -1,14 +1,14 @@
 import { StyleSheet, View } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Workout from "./Workout";
 import { WorkoutListProps } from "@/types/components/Workout";
-import { images } from '@/constants/images'; 
+import { defaultWorkoutImages } from "@/constants/images";
 
 export default function WorkoutList({data, theme} : WorkoutListProps) {
+  const [preloadedImages, setPreloadedImages] = useState();
 
   const workouts = data.map((workout) => {
-    const URL = images.workoutBanners[workout.difficulty][workout.type]
-
+    const URL = defaultWorkoutImages[workout.url.split('.')[0] as keyof typeof defaultWorkoutImages];    
 
     return (
       <Workout

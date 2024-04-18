@@ -2,7 +2,7 @@ import { MD3Theme } from "react-native-paper";
 
 export interface WorkoutData {
   id: number;
-  type: "arms" | "abs" | "legs";
+  url: string;
   title: string;
   information: string;
   difficulty: "beginner" | "intermediate" | "advanced";

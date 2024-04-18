@@ -7,7 +7,6 @@ export default function Progress({ data, theme }: ProgressProps) {
   return (
     <View style={styles.container}>
       <DataBlock value={data.workouts} suffix={"WORKOUTS"} theme={theme} />
-      <DataBlock value={data.calories} suffix={"CAL"} theme={theme} />
       <DataBlock value={data.minutes} suffix={"MINUTES"} theme={theme} />
     </View>
   );
@@ -36,7 +35,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "space-around",
     alignItems: "center",
   },
   dataBlockContainer: {

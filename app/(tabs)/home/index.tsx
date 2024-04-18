@@ -10,35 +10,74 @@ import { ScheduleData } from "@/types/components/Schedule";
 import defaultSchedule from "@/constants/defaultSchedule";
 import Progress from "@/components/Progress";
 import { WorkoutData } from "@/types/components/Workout";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
+import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebase-config";
 
 export default function HomeScreen() {
   const [schedule, setSchedule] = useState<ScheduleData>(defaultSchedule);
   const [defaultWorkouts, setDefaultWorkouts] = useState("");
   const [dailyProgress, setDailyProgress] = useState();
+  const [status, setStatus] = useState({
+    isLoading: true,
+    error: "",
+  });
 
   const insets = useSafeAreaInsets();
 
   const theme = useTheme();
 
+  useEffect(() => {
+    const fetchUserSchedule = async () => {
+      try {
+        const currentUser = FIREBASE_AUTH.currentUser;
+
+        if (currentUser) {
+          const uid = currentUser.uid;
+          const userRef = doc(FIREBASE_DB, "users", uid); // Replace with your user ID
+
+          // Listen for real-time updates on the user document
+          const unsubscribe = onSnapshot(userRef, (docSnapshot) => {
+            if (docSnapshot.exists()) {
+              const userSchedule = docSnapshot.data().schedule || null;
+              setSchedule(userSchedule);
+              console.log("Updated user schedule:", userSchedule);
+              // Use the updated schedule data here
+            } else {
+              console.log("No user document found");
+              setSchedule(defaultSchedule); // Reset schedule if document doesn't exist
+            }
+          });
+
+          return () => unsubscribe(); // Unsubscribe when component unmounts
+        }
+
+      } catch (error) {
+        console.error("Error fetching user schedule:", error);
+      }
+    };
+
+    fetchUserSchedule();
+  }, []); // Empty dependency array ensures useEffect runs only once
+
   const mockData: WorkoutData[] = [
     {
-      type: "arms",
+      url: "arms-beginner.jpg",
       title: "ARMS WORKOUT",
-      information: "16 EXERCISES - 12 MINUTES",
+      information: "16 EXERCISES",
       difficulty: "beginner",
       id: 1,
     },
     {
-      type: "legs",
+      url: "legs-beginner.jpg",
       title: "LEGS WORKOUT",
-      information: "6 EXERCISES - 9 MINUTES",
+      information: "6 EXERCISES",
       difficulty: "intermediate",
       id: 2,
     },
     {
-      type: "abs",
+      url: "abs-beginner.jpg",
       title: "ABS WORKOUT",
-      information: "12 EXERCISES - 11 MINUTES",
+      information: "12 EXERCISES",
       difficulty: "advanced",
       id: 3,
     },

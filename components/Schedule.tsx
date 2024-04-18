@@ -47,7 +47,7 @@ export function Day({ day, rest, theme }: DayProps) {
         {day}
       </Text>
 
-      {rest && (
+      {!rest && (
         <View
           style={{
             ...style.indicator,
@@ -58,7 +58,7 @@ export function Day({ day, rest, theme }: DayProps) {
           <Icon library="MaterialCommunityIcons" name="arm-flex" color={theme.colors.surface} size={16}/>
         </View>
       )}
-      {!rest && (
+      {rest && (
         <View
           style={{ ...style.indicator, borderColor: theme.colors.primary }}
         >

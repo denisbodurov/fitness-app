@@ -12,7 +12,7 @@ export default function CustomPlan({
   theme,
 }: CustomPlanProps) {
   return (
-    <Link asChild href="/(tabs)/profile">
+    <Link asChild href={`/(tabs)/workouts/${id}`}>
             <TouchableRipple
         rippleColor="rgba(128, 128, 128, .30)"
         >
@@ -24,7 +24,7 @@ export default function CustomPlan({
             }}
             >
             <Text variant="titleLarge" style={{...style.title, color: theme.colors.onBackground}}>
-                {title.toUpperCase()}
+                {title.toUpperCase() || "NO NAME"}
             </Text>
             <View style={style.informationContainer}>
                 <Text
@@ -47,7 +47,7 @@ export default function CustomPlan({
                 </Text>
                 <Text variant="titleSmall"style={{color: theme.colors.outline}}>{String.fromCharCode(0x25CF)}</Text>
                 <Text variant="titleSmall" style={{...style.information, color: theme.colors.outline}}>
-                {information.toUpperCase()}
+                {information} EXERCISES
                 </Text>
             </View>
             </View>

@@ -1,4 +1,6 @@
-import { Stack } from "expo-router";
+import { StackActions } from "@react-navigation/native";
+import { Stack, useFocusEffect, useNavigation, useSegments } from "expo-router";
+import { useCallback } from "react";
 import { useTheme } from "react-native-paper";
 
 function WorkoutsLayout() {
@@ -18,7 +20,9 @@ function WorkoutsLayout() {
         options={{
           headerShown: false,
           contentStyle: { backgroundColor: theme.colors.background },
+          
         }}
+        
       />
       <Stack.Screen
         name="create-workout"

@@ -1,6 +1,6 @@
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { Text } from "react-native-paper";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Icon from "./Icon";
 import { Link } from "expo-router";
 import { Image } from "expo-image";
@@ -86,9 +86,11 @@ const style = StyleSheet.create({
   },
   title: {
     fontFamily: "ProtestStrike",
+    color: "white",
   },
   information: {
     fontFamily: "LatoBold",
+    color: "white",
   },
   image: {
     position: "absolute",

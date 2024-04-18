@@ -1,4 +1,4 @@
-import { router } from "expo-router";
+import { router, useLocalSearchParams, usePathname } from "expo-router";
 import { Platform, StyleSheet, View } from "react-native";
 import { Button, IconButton, Text, useTheme } from "react-native-paper";
 import {
@@ -6,10 +6,73 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import Icon from "@/components/Icon";
+import { useEffect, useState } from "react";
+import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebase-config";
+import { doc, onSnapshot } from "firebase/firestore";
+import { WorkoutPlan } from "@/types/states/Plan";
+import DifficultyBadge from "@/components/DifficultyBadge";
 
 export default function WorkoutScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const id = usePathname();
+  const { slug } = useLocalSearchParams();
+
+  const [workout, setWorkout] = useState<WorkoutPlan>();
+
+  useEffect(() => {
+    const fetchUserWorkouts = async () => {
+      try {
+        const currentUser = FIREBASE_AUTH.currentUser;
+
+        if (currentUser) {
+          const uid = currentUser.uid;
+          const userRef = doc(FIREBASE_DB, "users", uid);
+
+          const unsubscribe = onSnapshot(userRef, (docSnapshot) => {
+            if (docSnapshot.exists()) {
+              const userData = docSnapshot.data();
+              const userWorkouts = userData.workouts;
+
+              if (userWorkouts) {
+                console.log(id);
+                const selectedWorkout =
+                  userWorkouts[parseInt(id.split("/").pop()!)]; // Get the exercise based on the slug
+                setWorkout(selectedWorkout);
+                console.log("selected workout: " + selectedWorkout);
+                console.log("Updated user workouts:", userWorkouts);
+              }
+              // Use the updated workouts data here
+            } else {
+              console.log("No user document found");
+            }
+          });
+
+          return () => unsubscribe(); // Unsubscribe when component unmounts
+        }
+      } catch (error) {
+        console.error("Error fetching user workouts:", error);
+      }
+    };
+
+    fetchUserWorkouts();
+  }, [id]); // Re-run effect when the slug changes
+
+  const getTargetMuscles = () => {
+    if (workout) {
+      const targetMusclesArray = workout.exercises.map(
+        (exercise) => exercise.target
+      );
+
+      const targetMuscles = targetMusclesArray.flat();
+
+      const uniqueTargetMuscles = [...new Set(targetMuscles)];
+
+      return uniqueTargetMuscles.join(", ").toUpperCase();
+    } else {
+      return "NO DATA";
+    }
+  };
 
   return (
     <View
@@ -49,18 +112,13 @@ export default function WorkoutScreen() {
       </View>
 
       <View style={styles.contentContainer}>
-        <View style={{ ...styles.difficultyBadge, backgroundColor: "aqua" }}>
-          <Text
-            variant="titleMedium"
-            style={{ ...styles.difficultyText, color: "black" }}
-          >
-            BEGINNER
-          </Text>
-        </View>
         <View style={styles.informationContainer}>
           <Text variant="headlineMedium" style={styles.workoutTitle}>
-            NO NAME
+            {(workout && workout.title.toUpperCase()) || "NO NAME"}
           </Text>
+          <View style={styles.informationItemContainer}>
+            {workout && <DifficultyBadge difficulty={workout.difficulty} />}
+          </View>
           <View style={styles.informationItemContainer}>
             <Icon
               library="Feather"
@@ -70,9 +128,9 @@ export default function WorkoutScreen() {
             />
             <Text
               variant="titleMedium"
-              style={{ ...styles.difficultyText, color: theme.colors.outline }}
+              style={{ ...styles.text, color: theme.colors.outline }}
             >
-              BUTTOCKS, CALVES, BICEPS, FOREARMS, CALVES, BICEPS,
+              {getTargetMuscles()}
             </Text>
           </View>
           <View style={styles.informationItemContainer}>
@@ -84,23 +142,9 @@ export default function WorkoutScreen() {
             />
             <Text
               variant="titleMedium"
-              style={{ ...styles.difficultyText, color: theme.colors.outline }}
+              style={{ ...styles.text, color: theme.colors.outline }}
             >
-              10 EXERCISES
-            </Text>
-          </View>
-          <View style={styles.informationItemContainer}>
-            <Icon
-              library="AntDesign"
-              name="clockcircle"
-              color={theme.colors.outline}
-              size={24}
-            />
-            <Text
-              variant="titleMedium"
-              style={{ ...styles.difficultyText, color: theme.colors.outline }}
-            >
-              25 MINUTES
+              {(workout && workout.exercises.length) || "N/A"} EXERCISES
             </Text>
           </View>
         </View>
@@ -109,8 +153,13 @@ export default function WorkoutScreen() {
             ...styles.startButton,
             backgroundColor: theme.colors.primary,
           }}
+          mode="contained"
+          onPress={() => console.log("PRESSED")}
         >
-          <Text variant="titleMedium" style={{ color: theme.colors.onPrimary }}>
+          <Text
+            variant="titleMedium"
+            style={{ ...styles.startButtonText, color: theme.colors.onPrimary }}
+          >
             START WORKOUT
           </Text>
         </Button>
@@ -128,7 +177,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     justifyContent: "flex-start",
     alignItems: "flex-start",
-    paddingHorizontal: 10,
+    paddingHorizontal: 30,
     paddingVertical: 20,
     gap: 25,
   },
@@ -162,16 +211,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     fontSize: 18,
   },
-  difficultyBadge: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    maxWidth: 150,
-    paddingVertical: 5,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-  },
-  difficultyText: {
+  text: {
     fontFamily: "ProtestStrike",
   },
   informationContainer: {
@@ -191,7 +231,9 @@ const styles = StyleSheet.create({
   },
   startButton: {
     width: "100%",
-    paddingVertical: 5,
     borderRadius: 10,
+  },
+  startButtonText: {
+    fontFamily: "ProtestStrike",
   },
 });

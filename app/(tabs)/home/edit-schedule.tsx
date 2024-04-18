@@ -22,7 +22,7 @@ function EditScheduleScreen() {
 
   const [schedule, setSchedule] = useState<ScheduleData>(defaultSchedule);
   const [isDialogVisible, setIsDialogVisible] = useState(false);
-  const [hasChanged, setHasChanged] = useState(false)
+  const [hasChanged, setHasChanged] = useState(false);
   const [status, setStatus] = useState({
     isLoading: true,
     error: "",
@@ -33,21 +33,21 @@ function EditScheduleScreen() {
       try {
         const currentUser = FIREBASE_AUTH.currentUser;
 
-        if(currentUser) {
-          const uid = currentUser.uid
+        if (currentUser) {
+          const uid = currentUser.uid;
 
-          const usersRef = collection(FIREBASE_DB, "users")
+          const usersRef = collection(FIREBASE_DB, "users");
 
           const userDoc = doc(usersRef, uid);
 
           const userDocSnapshot = await getDoc(userDoc);
 
-          if(userDocSnapshot.exists()) {
+          if (userDocSnapshot.exists()) {
             const userData = userDocSnapshot.data();
-            
+
             setSchedule({
-              ...userData.schedule
-            })
+              ...userData.schedule,
+            });
           } else {
             setStatus({ ...status, error: "RESOURCE NOT FOUND" });
           }
@@ -61,7 +61,7 @@ function EditScheduleScreen() {
           return { ...prevStatus, isLoading: false };
         });
       }
-    }
+    };
 
     fetchSchedule();
   }, []);
@@ -111,7 +111,7 @@ function EditScheduleScreen() {
         const usersRef = collection(FIREBASE_DB, "users");
         const userDoc = doc(usersRef, uid);
         const updateData = {
-          schedule: schedule
+          schedule: schedule,
         };
 
         await updateDoc(userDoc, updateData);
@@ -126,7 +126,7 @@ function EditScheduleScreen() {
         return { ...prevStatus, isLoading: false };
       });
     }
-  }
+  };
 
   return (
     <View
@@ -141,7 +141,7 @@ function EditScheduleScreen() {
       <FunctionalHeader
         title="Settings"
         onSave={handleSave}
-        onBack={() => hasChanged ? showDialogue() : router.back()}
+        onBack={() => (hasChanged ? showDialogue() : router.back())}
       />
       <PaperProvider>
         <UnsavedChangesDialog
@@ -165,7 +165,7 @@ function EditScheduleScreen() {
             <List.Subheader
               style={{ ...styles.listTitle, color: theme.colors.onBackground }}
             >
-              Workout Day
+              Rest
             </List.Subheader>
           </View>
 

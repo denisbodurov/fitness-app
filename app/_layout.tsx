@@ -5,8 +5,8 @@ import { DarkTheme } from '@/themes/DarkTheme';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-
+import { useEffect, useState } from 'react';
+import { Asset } from "expo-asset";
 import { useColorScheme } from 'react-native';
 import { FirebaseProvider } from '@/providers/FirebaseProvider';
 
@@ -36,11 +36,35 @@ export default function RootLayout() {
     LatoLightItalic: require('@/assets/fonts/Lato-LightItalic.ttf'),
     LatoThin: require('@/assets/fonts/Lato-Thin.ttf'),
     LatoThinItalic: require('@/assets/fonts/Lato-ThinItalic.ttf'),
-
-  
     ...FontAwesome.font,
   });
 
+
+  const [imagesLoaded, setImagesLoaded] = useState(false);
+
+  const _loadAssetsAsync = async () => {
+
+    const images = [
+      require("@/assets/images/default_workout_images/abs-beginner.jpg"),
+      require("@/assets/images/default_workout_images/legs-beginner.jpg"),
+      require("@/assets/images/default_workout_images/arms-beginner.jpg"),
+      require("@/assets/images/default_workout_images/arms-intermediate.jpg"),
+      require("@/assets/images/default_workout_images/abs-intermediate.jpg"),
+      require("@/assets/images/default_workout_images/legs-intermediate.jpg"),
+      require("@/assets/images/default_workout_images/arms-advanced.jpg"),
+      require("@/assets/images/default_workout_images/abs-advanced.jpg"),
+      require("@/assets/images/default_workout_images/legs-advanced.jpg"),
+    ];
+    
+
+    const imageAssets = images.map(image => Asset.fromModule(image));
+    await Promise.all(imageAssets.map(asset => asset.downloadAsync()));
+    setImagesLoaded(true);
+  };
+
+  useEffect(() => {
+    _loadAssetsAsync();
+  }, []);
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
@@ -48,12 +72,12 @@ export default function RootLayout() {
   }, [error]);
 
   useEffect(() => {
-    if (loaded) {
+    if (loaded && imagesLoaded) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [loaded, imagesLoaded]);
 
-  if (!loaded) {
+  if (!loaded || !imagesLoaded) {
     return null;
   }
 

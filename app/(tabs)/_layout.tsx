@@ -14,6 +14,7 @@ export default function TabLayout() {
   const page = segment[segment.length - 1];
   const pagesToHideTabBar = ["edit-schedule", "settings", "create-workout", "edit-workout"];
 
+
   if (user) {
     return (
       <Tabs
@@ -62,7 +63,9 @@ export default function TabLayout() {
           },
           tabBarStyle: {
             ...styles.tabBar,
-            display: pagesToHideTabBar.includes(page) ? "none" : "flex", // Hide tab bar for listed routes
+            // position: pagesToHideTabBar.includes(page) ? "absolute" : "relative",
+            // marginTop: pagesToHideTabBar.includes(page) ? 9999 : 0,
+            // display: pagesToHideTabBar.includes(page) ? "none" : "flex", // Hide tab bar for listed routes
             backgroundColor: theme.colors.surface,
           },
           tabBarLabelStyle: styles.tabBarItemLabel,
@@ -110,10 +113,6 @@ const styles = StyleSheet.create({
   tabBar: {
     height: Platform.OS === "ios" ? 100 : 70,
     borderTopWidth: 0,
-    shadowColor: "black",
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
     overflow: "hidden",
   },
   tabBarItem: {
