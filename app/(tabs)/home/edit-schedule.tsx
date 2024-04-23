@@ -184,7 +184,7 @@ function EditScheduleScreen() {
                 title="Monday"
                 right={() => (
                   <Switch
-                    style={{}}
+                    color={theme.colors.primary}
                     value={schedule.monday.rest}
                     onValueChange={() => onToggleSwitch(1)}
                   />
@@ -199,7 +199,7 @@ function EditScheduleScreen() {
                 title="Tuesday"
                 right={() => (
                   <Switch
-                    style={{}}
+                    color={theme.colors.primary}
                     value={schedule.tuesday.rest}
                     onValueChange={() => onToggleSwitch(2)}
                   />
@@ -214,7 +214,7 @@ function EditScheduleScreen() {
                 title="Wednesday"
                 right={() => (
                   <Switch
-                    style={{}}
+                    color={theme.colors.primary}
                     value={schedule.wednesday.rest}
                     onValueChange={() => onToggleSwitch(3)}
                   />
@@ -229,7 +229,7 @@ function EditScheduleScreen() {
                 title="Thursday"
                 right={() => (
                   <Switch
-                    style={{}}
+                    color={theme.colors.primary}
                     value={schedule.thursday.rest}
                     onValueChange={() => onToggleSwitch(4)}
                   />
@@ -244,7 +244,7 @@ function EditScheduleScreen() {
                 title="Friday"
                 right={() => (
                   <Switch
-                    style={{}}
+                    color={theme.colors.primary}
                     value={schedule.friday.rest}
                     onValueChange={() => onToggleSwitch(5)}
                   />
@@ -259,7 +259,7 @@ function EditScheduleScreen() {
                 title="Saturday"
                 right={() => (
                   <Switch
-                    style={{}}
+                    color={theme.colors.primary}
                     value={schedule.saturday.rest}
                     onValueChange={() => onToggleSwitch(6)}
                   />
@@ -274,7 +274,7 @@ function EditScheduleScreen() {
                 title="Sunday"
                 right={() => (
                   <Switch
-                    style={{}}
+                    color={theme.colors.primary}
                     value={schedule.sunday.rest}
                     onValueChange={() => onToggleSwitch(7)}
                   />

@@ -34,8 +34,8 @@ export default function TabLayout() {
                   "MaterialCommunityIcons",
                 ];
                 break;
-              case "feed":
-                [iconName, iconLibrary] = ["newspaper", "FontAwesome6"];
+              case "motivation":
+                [iconName, iconLibrary] = ["meditation", "MaterialCommunityIcons"];
                 break;
               case "profile":
                 [iconName, iconLibrary] = ["user", "FontAwesome"];
@@ -89,9 +89,9 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="feed"
+          name="motivation"
           options={{
-            title: "Feed",
+            title: "Motivation",
             headerShown: false,
           }}
         />
@@ -113,6 +113,10 @@ const styles = StyleSheet.create({
   tabBar: {
     height: Platform.OS === "ios" ? 100 : 70,
     borderTopWidth: 0,
+    shadowColor: "black",
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
     overflow: "hidden",
   },
   tabBarItem: {

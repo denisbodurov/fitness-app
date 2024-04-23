@@ -5,7 +5,6 @@ import { WorkoutListProps } from "@/types/components/Workout";
 import { defaultWorkoutImages } from "@/constants/images";
 
 export default function WorkoutList({data, theme} : WorkoutListProps) {
-  const [preloadedImages, setPreloadedImages] = useState();
 
   const workouts = data.map((workout) => {
     const URL = defaultWorkoutImages[workout.url.split('.')[0] as keyof typeof defaultWorkoutImages];    

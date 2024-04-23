@@ -3,7 +3,6 @@ export interface ExerciseState {
     id: string;
     name: string;
     description: string;
-    difficulty: number;
     imageURL: string;
     videoURL: string;
     target: string[];

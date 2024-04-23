@@ -19,41 +19,7 @@ export default function Feed() {
       }}
     >
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Post
-          id={1}
-          title="New epic feed"
-          type="NEWS"
-          postDate={new Date()}
-          theme={theme}
-        />
-        <Post
-          id={1}
-          title="New epic feed"
-          type="NEWS"
-          postDate={new Date()}
-          theme={theme}
-        />
-        <Post
-          id={1}
-          title="New epic feed"
-          type="NEWS"
-          postDate={new Date()}
-          theme={theme}
-        />
-        <Post
-          id={1}
-          title="New epic feed"
-          type="NEWS"
-          postDate={new Date()}
-          theme={theme}
-        />
-        <Post
-          id={1}
-          title="New epic feed"
-          type="NEWS"
-          postDate={new Date()}
-          theme={theme}
-        />
+        
       </ScrollView>
     </View>
   );

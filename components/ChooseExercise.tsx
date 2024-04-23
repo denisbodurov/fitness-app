@@ -4,8 +4,12 @@ import { StyleSheet, View } from "react-native";
 import { Image } from "expo-image";
 import { Text, TouchableRipple } from "react-native-paper";
 import { ChooseExerciseProps } from "@/types/components/ChooseExercise";
+import { exerciseImages } from "@/constants/images";
 
 function ChooseExercise({ name, data, onPress, theme }: ChooseExerciseProps) {
+
+  const URL = exerciseImages[data.imageURL.split('.')[0] as keyof typeof exerciseImages];    
+
   return (
     <TouchableRipple
       style={{ ...styles.button, backgroundColor: theme.colors.background }}
@@ -19,14 +23,14 @@ function ChooseExercise({ name, data, onPress, theme }: ChooseExerciseProps) {
       >
         <View style={styles.imageContainer}>
           <Image
-            source={{
-              uri: "https://images.immediate.co.uk/production/volatile/sites/30/2017/01/Bunch-of-bananas-67e91d5.jpg?quality=90&resize=440,400",
-            }}
+            style={styles.image}
+            source={URL}
           />
+          <View style={styles.dim}/>
         </View>
         <View style={styles.textContainer}>
           <Text variant="titleMedium" style={styles.title}>
-            {name}
+            {name.toUpperCase()}
           </Text>
         </View>
       </View>
@@ -44,14 +48,11 @@ const styles = StyleSheet.create({
     maxHeight: 250,
     borderRadius: 10,
   },
-  touchable: {
-    width: "45%",
-    maxWidth: "50%",
-    borderRadius: 10,
-  },
   imageContainer: {
     width: "100%",
     height: 150,
+    overflow: "hidden",
+    objectFit: "cover",
   },
   textContainer: {
     height: 50,
@@ -64,7 +65,21 @@ const styles = StyleSheet.create({
   },
   button: {
     borderRadius: 10,
+    overflow: "hidden",
+    elevation: 5,
   },
+  image: {
+    width: "100%",
+    height: "100%"
+  },
+  dim: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  }
 });
 
 export default ChooseExercise;

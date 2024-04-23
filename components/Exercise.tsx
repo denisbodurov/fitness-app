@@ -4,12 +4,16 @@ import { StyleSheet, View } from "react-native";
 import { Image } from "expo-image";
 import { IconButton, Text } from "react-native-paper";
 import { ExerciseProps } from "@/types/components/Exercise";
+import { exerciseImages } from "@/constants/images";
 
-function Exercise({name, order, information, onRemove, theme } : ExerciseProps) {
+function Exercise({name, order, information, imageURL, onRemove, theme } : ExerciseProps) {
+
+  const URL = exerciseImages[imageURL.split('.')[0] as keyof typeof exerciseImages];
+
   return (
     <View style={{...styles.container, backgroundColor: theme.colors.surface}}>
         <View style={styles.imageContainer}>
-            <Image source={{uri: "https://images.immediate.co.uk/production/volatile/sites/30/2017/01/Bunch-of-bananas-67e91d5.jpg?quality=90&resize=440,400"}}/>
+            <Image style={styles.image} source={URL}/>
         </View>
         <View style={styles.textContainer}>
           <Text variant="titleMedium" style={styles.title}>{name}</Text>
@@ -34,8 +38,9 @@ const styles = StyleSheet.create({
   imageContainer: {
     height: 70,
     width: 70,
-    borderWidth: 1,
-    borderColor: "red"
+    borderWidth: 2,
+    borderRadius: 10,
+    overflow: "hidden",
   },
   textContainer: {
     flex: 1,
@@ -46,6 +51,10 @@ const styles = StyleSheet.create({
   },
   information: {
     fontFamily: "LatoBold",
+  },
+  image: {
+    width: "100%",
+    height: "100%"
   }
 });
 

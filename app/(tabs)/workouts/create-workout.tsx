@@ -260,6 +260,7 @@ const WorkoutForm = () => {
               name={exercise.name}
               information={`${exercise.sets}x${exercise.reps}`}
               order={exercise.order!}
+              imageURL={exercise.imageURL}
               onRemove={(order) => handleRemove(order)}
               theme={theme}
             />
@@ -272,7 +273,7 @@ const WorkoutForm = () => {
             onDismiss={() => setModalVisible(false)}
             contentContainerStyle={{
               ...styles.modal,
-              backgroundColor: theme.colors.surface,
+              backgroundColor: theme.colors.background,
             }}
           >
             <View
@@ -352,8 +353,8 @@ const styles = StyleSheet.create({
   modalScroll: {
     flex: 1,
     flexDirection: "row",
-    justifyContent: "space-around",
-    gap: 5,
+    justifyContent: "space-evenly",
+    gap: 10,
     flexWrap: "wrap",
     padding: 20,
   },
