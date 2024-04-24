@@ -13,6 +13,8 @@ import {
   Switch,
   PaperProvider,
   ActivityIndicator,
+  Snackbar,
+  Text
 } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -26,6 +28,7 @@ function EditScheduleScreen() {
   const [status, setStatus] = useState({
     isLoading: true,
     error: "",
+    success: "",
   });
 
   useEffect(() => {
@@ -114,13 +117,19 @@ function EditScheduleScreen() {
           schedule: schedule,
         };
 
-        await updateDoc(userDoc, updateData);
-        setHasChanged(false);
+        if(userDoc) {
+          await updateDoc(userDoc, updateData);
+          setStatus({...status, success: "UPDATED SUCCESSFULLY"})
+          setHasChanged(false);
+        } else {
+          setStatus({...status, error: "USER DOCUMENT NOT FOUND"})
+        }
+
       } else {
         setStatus({ ...status, error: "AUTH SESSION NOT FOUND" });
       }
     } catch (error) {
-      setStatus({ ...status, error: `REQUEST FAILED: ${error}` });
+      setStatus({ ...status, error: `SOMETHING WENT WRONG` });
     } finally {
       setStatus((prevStatus) => {
         return { ...prevStatus, isLoading: false };
@@ -284,6 +293,52 @@ function EditScheduleScreen() {
           )}
         </List.Section>
       </PaperProvider>
+      {/* Error Snackbar */}
+      {status.error && (
+        <Snackbar
+          visible={status.error ? true : false}
+          onDismiss={() => setStatus( (prevStatus) => { return {...prevStatus, error: ""}})}
+          style={{ backgroundColor: theme.colors.errorContainer }}
+          duration={3000}
+          action={{
+            label: "DISMISS",
+            labelStyle: {
+              color: theme.colors.onBackground,
+              fontFamily: "ProtestStrike"
+            }
+          }}
+        >
+          <Text
+            variant="titleMedium"
+            style={{ color: theme.colors.onErrorContainer, fontFamily: "ProtestStrike" }}
+          >
+            {status.error}
+          </Text>
+        </Snackbar>
+      )}
+      {/* Success Snackbar */}
+      {status.success && (
+        <Snackbar
+          visible={status.success ? true : false}
+          onDismiss={() => setStatus( (prevStatus) => { return {...prevStatus, success: ""}})}
+          style={{ backgroundColor: "#5cb85c" }}
+          duration={3000}
+          action={{
+            label: "DISMISS",
+            labelStyle: {
+              color: "white",
+              fontFamily: "ProtestStrike"
+            }
+          }}
+        >
+          <Text
+            variant="titleMedium"
+            style={{ color: "white", fontFamily: "ProtestStrike" }}
+          >
+            {status.success}
+          </Text>
+        </Snackbar>
+      )}
     </View>
   );
 }

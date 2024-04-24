@@ -1,19 +1,37 @@
-import { useState }  from "react";
-import { StyleSheet, View, ActivityIndicator, KeyboardAvoidingView, ScrollView, Platform } from "react-native";
+import { useState } from "react";
+import {
+  StyleSheet,
+  View,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
+} from "react-native";
 import { useTheme, Text, TextInput, Button } from "react-native-paper";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { router } from "expo-router";
 import useFirebase from "@/utils/hooks/useFirebase";
+import { Image } from "expo-image";
 
 export default function SignInScreen() {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
+  const { signIn } = useFirebase();
 
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isFocused, setIsFocused] = useState({
+    email: false,
+    password: false,
+  });
+
   const [status, setStatus] = useState({
     isLoading: false,
     error: "",
   });
-  const { signIn } = useFirebase();
+
   const [credentials, setCredentials] = useState({
     email: "",
     password: "",
@@ -53,64 +71,125 @@ export default function SignInScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView style={styles.keyboardAvoidingContainer} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+    <View
+      style={{
+        ...styles.safeArea,
+        paddingTop: insets.top,
+        paddingLeft: insets.left,
+        paddingRight: insets.right,
+        paddingBottom: Platform.OS === "android" ? insets.bottom : 0,
+      }}
+    >
+      <Image
+        style={styles.backgroundImage}
+        source={require("@/assets/images/auth-background.jpg")}
+      />
+      <View style={styles.backgroundDim} />
+      <KeyboardAvoidingView
+        style={{
+          ...styles.keyboardAvoidingContainer,
+          paddingTop: insets.top,
+          paddingLeft: insets.left,
+          paddingRight: insets.right,
+          paddingBottom: Platform.OS === "android" ? insets.bottom : 0,
+        }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
         <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.formGroup}>
-          <Text variant="headlineLarge" style={styles.title}>
-            SPARKFIT
-          </Text>
-          {status.error && (
-            <View
-              style={{
-                ...styles.errorContainer,
-                backgroundColor: theme.colors.errorContainer,
-              }}
+          <View style={styles.formGroup}>
+            <Text
+              variant="headlineLarge"
+              style={{ ...styles.title, color: theme.colors.secondary }}
             >
-              <Text
+              SPARKFIT
+            </Text>
+            {status.error && (
+              <View
                 style={{
-                  ...styles.errorMessage,
-                  color: theme.colors.onErrorContainer,
+                  ...styles.errorContainer,
+                  backgroundColor: theme.colors.errorContainer,
                 }}
               >
-                {status.error}
-              </Text>
+                <Text
+                  style={{
+                    ...styles.errorMessage,
+                    color: theme.colors.onErrorContainer,
+                  }}
+                >
+                  {status.error}
+                </Text>
+              </View>
+            )}
+            <View style={styles.inputGroup}>
+              <TextInput
+                style={styles.inputField}
+                label="Email"
+                theme={{
+                  fonts: {
+                    bodyLarge: {
+                      ...theme.fonts.bodyLarge,
+                      fontFamily: "ProtestStrike",
+                    },
+                  },
+                }}
+                textColor={
+                  isFocused.email
+                    ? status.error
+                      ? theme.colors.error
+                      : theme.colors.primary
+                    : theme.colors.outline
+                }
+                mode="flat"
+                underlineColor={theme.colors.outline}
+                textContentType="emailAddress"
+                onFocus={() => setIsFocused({ ...isFocused, email: true })}
+                onBlur={() => setIsFocused({ ...isFocused, email: false })}
+                onChangeText={(email) =>
+                  setCredentials({ ...credentials, email })
+                }
+                error={status.error ? true : false}
+              />
+              <TextInput
+                style={styles.inputField}
+                label="Password"
+                theme={{
+                  fonts: {
+                    bodyLarge: {
+                      ...theme.fonts.bodyLarge,
+                      fontFamily: "ProtestStrike",
+                    },
+                  },
+                }}
+                textColor={
+                  isFocused.password
+                    ? status.error
+                      ? theme.colors.error
+                      : theme.colors.primary
+                    : theme.colors.outline
+                }
+                mode="flat"
+                underlineColor={theme.colors.outline}
+                textContentType="password"
+                onFocus={() => setIsFocused({ ...isFocused, password: true })}
+                onBlur={() => setIsFocused({ ...isFocused, password: false })}
+                onChangeText={(password) =>
+                  setCredentials({ ...credentials, password })
+                }
+                secureTextEntry={!isPasswordVisible}
+                right={
+                  <TextInput.Icon
+                    icon={isPasswordVisible ? "eye-off-outline" : "eye-outline"}
+                    color={
+                      status.error ? theme.colors.error : theme.colors.outline
+                    }
+                    onPress={togglePasswordVisibility}
+                  />
+                }
+                error={status.error ? true : false}
+              />
             </View>
-          )}
-          <View style={styles.inputGroup}>
-            <TextInput
-              style={styles.inputField}
-              label="Email"
-              mode="outlined"
-              textContentType="emailAddress"
-              onChangeText={(email) =>
-                setCredentials({ ...credentials, email })
-              }
-              error={status.error ? true : false}
-            />
-            <TextInput
-              style={styles.inputField}
-              label="Password"
-              mode="outlined"
-              textContentType="password"
-              onChangeText={(password) =>
-                setCredentials({ ...credentials, password })
-              }
-              secureTextEntry={!isPasswordVisible}
-              right={
-                <TextInput.Icon
-                  icon={isPasswordVisible ? "eye-off-outline" : "eye-outline"}
-                  color={
-                    status.error ? theme.colors.error : theme.colors.outline
-                  }
-                  onPress={togglePasswordVisibility}
-                />
-              }
-              error={status.error ? true : false}
-            />
           </View>
-        </View>
-        <View style={styles.actionGroup}>
+          <View style={styles.actionGroup}>
             <Button
               style={{
                 ...styles.button,
@@ -138,10 +217,13 @@ export default function SignInScreen() {
               )}
             </Button>
             <View style={styles.signinGroup}>
-              <Text>Don't have an account yet?</Text>
+              <Text style={{ ...styles.text, color: theme.colors.secondary }}>
+                Don't have an account yet?
+              </Text>
               <Button
                 mode="text"
                 onPress={() => router.navigate("/(auth)/sign-up")}
+                labelStyle={styles.text}
               >
                 SIGN UP
               </Button>
@@ -149,7 +231,7 @@ export default function SignInScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -157,8 +239,23 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
+  backgroundImage: {
+    width: "100%",
+    height: "100%",
+  },
+  backgroundDim: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    width: 2000,
+    height: 2000,
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+  },
   keyboardAvoidingContainer: {
     flex: 1,
+    position: "absolute",
+    width: "100%",
+    height: "100%",
   },
   container: {
     flex: 1,
@@ -181,8 +278,12 @@ const styles = StyleSheet.create({
   },
   inputField: {
     width: "100%",
+    backgroundColor: "transparent"
   },
   title: {
+    fontFamily: "ProtestStrike",
+  },
+  text: {
     fontFamily: "ProtestStrike",
   },
   button: {

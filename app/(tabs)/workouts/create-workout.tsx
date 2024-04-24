@@ -54,7 +54,6 @@ const WorkoutForm = () => {
           id: doc.id,
           name: doc.data().name,
           description: doc.data().description,
-          difficulty: doc.data().difficulty,
           imageURL: doc.data().imageURL,
           videoURL: doc.data().videoURL,
           target: doc.data().target,
@@ -125,18 +124,19 @@ const WorkoutForm = () => {
 
   const handleSave = async () => {
 
+    console.log(plan)
+
     try {
       const currentUser = FIREBASE_AUTH.currentUser;
 
       if(currentUser) {
         const uid = currentUser.uid;
-        const userRef = doc(FIREBASE_DB, "users", uid); // Reference the user document
-        const userDoc = await getDoc(userRef); // Fetch the user document
+        const userRef = doc(FIREBASE_DB, "users", uid);
+        const userDoc = await getDoc(userRef);
     
-        // Update the workouts array within the user document
         if(userDoc.exists()) {
           await updateDoc(userRef, {
-            workouts: [...userDoc.data().workouts, plan], // Add the new plan to the workouts array
+            workouts: [...userDoc.data().workouts, plan],
           });
           console.log("Workout saved successfully!");
         } else {

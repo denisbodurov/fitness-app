@@ -63,22 +63,29 @@ export default function HomeScreen() {
     {
       url: "arms-beginner.jpg",
       title: "ARMS WORKOUT",
-      information: "16 EXERCISES",
-      difficulty: "beginner",
+      information: "3 EXERCISES",
+      difficulty: 1,
       id: 1,
     },
     {
       url: "legs-beginner.jpg",
       title: "LEGS WORKOUT",
+      information: "3 EXERCISES",
+      difficulty: 1,
+      id: 4,
+    },
+    {
+      url: "legs-beginner.jpg",
+      title: "LEGS WORKOUT",
       information: "6 EXERCISES",
-      difficulty: "intermediate",
+      difficulty: 2,
       id: 2,
     },
     {
       url: "abs-beginner.jpg",
       title: "ABS WORKOUT",
       information: "12 EXERCISES",
-      difficulty: "advanced",
+      difficulty: 3,
       id: 3,
     },
   ];

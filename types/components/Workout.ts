@@ -5,14 +5,14 @@ export interface WorkoutData {
   url: string;
   title: string;
   information: string;
-  difficulty: "beginner" | "intermediate" | "advanced";
+  difficulty: number;
 }
 
 export interface WorkoutProps {
   id: number;
   title: string;
   information: string;
-  difficulty: "beginner" | "intermediate" | "advanced";
+  difficulty: number;
   bannerURL: string;
   containerHeight?: number;
   theme: MD3Theme

@@ -2,7 +2,6 @@ import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   KeyboardAvoidingView,
-  KeyboardAvoidingViewComponent,
   Platform,
   ScrollView,
   StyleSheet,
@@ -14,12 +13,16 @@ import {
   TextInput,
   Button,
   ActivityIndicator,
+  Snackbar,
 } from "react-native-paper";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import useFirebase from "@/utils/hooks/useFirebase";
+import { Image } from "expo-image";
 
 export default function ModalScreen() {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
+
   const [credentials, setCredentials] = useState({
     firstName: "",
     lastName: "",
@@ -28,10 +31,18 @@ export default function ModalScreen() {
     confirmPassword: "",
   });
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isFocused, setIsFocused] = useState({
+    fname: false,
+    lname: false,
+    email: false,
+    password: false,
+    confirmPassword: false,
+  });
 
   const [status, setStatus] = useState({
     isLoading: false,
     error: "",
+    success: "",
   });
 
   const { signUp } = useFirebase();
@@ -63,7 +74,7 @@ export default function ModalScreen() {
           );
 
           if ((await response).user) {
-            router.navigate("/(auth)/sign-in");
+            setStatus({ ...status, success: "REGISTRATION SUCCESSFUL" });
           }
 
           if ((await response).error !== undefined) {
@@ -85,14 +96,36 @@ export default function ModalScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView
-          style={styles.keyboardAvoidingContainer}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-        >
+    <View
+      style={{
+        ...styles.safeArea,
+        paddingTop: insets.top,
+        paddingLeft: insets.left,
+        paddingRight: insets.right,
+        paddingBottom: Platform.OS === "android" ? insets.bottom : 0,
+      }}
+    >
+      <Image
+        style={styles.backgroundImage}
+        source={require("@/assets/images/auth-background.jpg")}
+      />
+      <View style={styles.backgroundDim} />
+      <KeyboardAvoidingView
+        style={{
+          ...styles.keyboardAvoidingContainer,
+          paddingTop: insets.top,
+          paddingLeft: insets.left,
+          paddingRight: insets.right,
+          paddingBottom: Platform.OS === "android" ? insets.bottom : 0,
+        }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
         <ScrollView contentContainerStyle={styles.container}>
           <View style={styles.formGroup}>
-            <Text variant="headlineLarge" style={styles.title}>
+            <Text
+              variant="headlineLarge"
+              style={{ ...styles.title, color: theme.colors.secondary }}
+            >
               SPARKFIT
             </Text>
             {status.error && (
@@ -117,8 +150,26 @@ export default function ModalScreen() {
                 <TextInput
                   style={styles.nameInput}
                   label="First Name"
-                  mode="outlined"
+                  theme={{
+                    fonts: {
+                      bodyLarge: {
+                        ...theme.fonts.bodyLarge,
+                        fontFamily: "ProtestStrike",
+                      },
+                    },
+                  }}
+                  textColor={
+                    isFocused.fname
+                      ? status.error
+                        ? theme.colors.error
+                        : theme.colors.primary
+                      : theme.colors.outline
+                  }
+                  mode="flat"
+                  underlineColor={theme.colors.outline}
                   textContentType="givenName"
+                  onFocus={() => setIsFocused({ ...isFocused, fname: true })}
+                  onBlur={() => setIsFocused({ ...isFocused, fname: false })}
                   onChangeText={(firstName) =>
                     setCredentials({ ...credentials, firstName })
                   }
@@ -127,8 +178,26 @@ export default function ModalScreen() {
                 <TextInput
                   style={styles.nameInput}
                   label="Last Name"
-                  mode="outlined"
+                  theme={{
+                    fonts: {
+                      bodyLarge: {
+                        ...theme.fonts.bodyLarge,
+                        fontFamily: "ProtestStrike",
+                      },
+                    },
+                  }}
+                  textColor={
+                    isFocused.lname
+                      ? status.error
+                        ? theme.colors.error
+                        : theme.colors.primary
+                      : theme.colors.outline
+                  }
+                  mode="flat"
+                  underlineColor={theme.colors.outline}
                   textContentType="familyName"
+                  onFocus={() => setIsFocused({ ...isFocused, lname: true })}
+                  onBlur={() => setIsFocused({ ...isFocused, lname: false })}
                   onChangeText={(lastName) =>
                     setCredentials({ ...credentials, lastName })
                   }
@@ -138,18 +207,54 @@ export default function ModalScreen() {
               <TextInput
                 style={styles.inputField}
                 label="Email"
-                mode="outlined"
+                theme={{
+                  fonts: {
+                    bodyLarge: {
+                      ...theme.fonts.bodyLarge,
+                      fontFamily: "ProtestStrike",
+                    },
+                  },
+                }}
+                textColor={
+                  isFocused.email
+                    ? status.error
+                      ? theme.colors.error
+                      : theme.colors.primary
+                    : theme.colors.outline
+                }
+                mode="flat"
+                underlineColor={theme.colors.outline}
                 textContentType="emailAddress"
+                onFocus={() => setIsFocused({ ...isFocused, email: true })}
+                onBlur={() => setIsFocused({ ...isFocused, email: false })}
                 onChangeText={(email) =>
                   setCredentials({ ...credentials, email })
                 }
                 error={status.error ? true : false}
               />
               <TextInput
-                style={styles.inputField}
+                style={{ ...styles.inputField }}
                 label="Password"
-                mode="outlined"
+                theme={{
+                  fonts: {
+                    bodyLarge: {
+                      ...theme.fonts.bodyLarge,
+                      fontFamily: "ProtestStrike",
+                    },
+                  },
+                }}
+                textColor={
+                  isFocused.password
+                    ? status.error
+                      ? theme.colors.error
+                      : theme.colors.primary
+                    : theme.colors.outline
+                }
+                mode="flat"
+                underlineColor={theme.colors.outline}
                 textContentType="password"
+                onFocus={() => setIsFocused({ ...isFocused, password: true })}
+                onBlur={() => setIsFocused({ ...isFocused, password: false })}
                 secureTextEntry={!isPasswordVisible}
                 onChangeText={(password) =>
                   setCredentials({ ...credentials, password })
@@ -159,7 +264,7 @@ export default function ModalScreen() {
                   <TextInput.Icon
                     icon={isPasswordVisible ? "eye-off-outline" : "eye-outline"}
                     color={
-                      status.error ? theme.colors.error : theme.colors.outline
+                      isFocused.password ? (status.error ? theme.colors.error : theme.colors.primary) : (status.error ? theme.colors.error : theme.colors.outline)
                     }
                     onPress={togglePasswordVisibility}
                   />
@@ -168,8 +273,30 @@ export default function ModalScreen() {
               <TextInput
                 style={styles.inputField}
                 label="Confirm Password"
-                mode="outlined"
+                theme={{
+                  fonts: {
+                    bodyLarge: {
+                      ...theme.fonts.bodyLarge,
+                      fontFamily: "ProtestStrike",
+                    },
+                  },
+                }}
+                textColor={
+                  isFocused.confirmPassword
+                    ? status.error
+                      ? theme.colors.error
+                      : theme.colors.primary
+                    : theme.colors.outline
+                }
+                mode="flat"
+                underlineColor={theme.colors.outline}
                 textContentType="password"
+                onFocus={() =>
+                  setIsFocused({ ...isFocused, confirmPassword: true })
+                }
+                onBlur={() =>
+                  setIsFocused({ ...isFocused, confirmPassword: false })
+                }
                 secureTextEntry={!isPasswordVisible}
                 onChangeText={(confirmPassword) =>
                   setCredentials({ ...credentials, confirmPassword })
@@ -179,7 +306,7 @@ export default function ModalScreen() {
                   <TextInput.Icon
                     icon={isPasswordVisible ? "eye-off-outline" : "eye-outline"}
                     color={
-                      status.error ? theme.colors.error : theme.colors.outline
+                      isFocused.confirmPassword ? (status.error ? theme.colors.error : theme.colors.primary) : (status.error ? theme.colors.error : theme.colors.outline)
                     }
                     onPress={togglePasswordVisibility}
                   />
@@ -188,44 +315,69 @@ export default function ModalScreen() {
             </View>
           </View>
           <View style={styles.actionGroup}>
-              <Button
-                style={{
-                  ...styles.button,
-                  backgroundColor: theme.colors.primary,
-                }}
-                mode="contained"
-                onPress={handleSignUp}
-              >
-                {status.isLoading ? (
-                  <ActivityIndicator
-                    size="small"
-                    color={theme.colors.onPrimary}
-                  />
-                ) : (
-                  <Text
-                    variant="titleMedium"
-                    style={{
-                      ...styles.buttonTitle,
-                      color: theme.colors.onPrimary,
-                    }}
-                  >
-                    SIGN UP
-                  </Text>
-                )}
-              </Button>
-              <View style={styles.signupGroup}>
-                <Text>Already have an account?</Text>
-                <Button
-                  mode="text"
-                  onPress={() => router.replace("/(auth)/sign-in")}
+            <Button
+              style={{
+                ...styles.button,
+                backgroundColor: theme.colors.primary,
+              }}
+              mode="contained"
+              onPress={handleSignUp}
+            >
+              {status.isLoading ? (
+                <ActivityIndicator
+                  size="small"
+                  color={theme.colors.onPrimary}
+                />
+              ) : (
+                <Text
+                  variant="titleMedium"
+                  style={{
+                    ...styles.buttonTitle,
+                    color: theme.colors.onPrimary,
+                  }}
                 >
-                  SIGN IN
-                </Button>
-              </View>
+                  SIGN UP
+                </Text>
+              )}
+            </Button>
+            <View style={styles.signupGroup}>
+              <Text style={{ ...styles.text, color: theme.colors.secondary }}>
+                Already have an account?
+              </Text>
+              <Button
+                mode="text"
+                onPress={() => router.replace("/(auth)/sign-in")}
+                labelStyle={{ ...styles.text }}
+              >
+                SIGN IN
+              </Button>
             </View>
+          </View>
         </ScrollView>
-        </KeyboardAvoidingView>
-    </SafeAreaView>
+      </KeyboardAvoidingView>
+      {status.success && (
+        <Snackbar
+          visible={status.success ? true : false}
+          onDismiss={() => router.replace("/(auth)/sign-in")}
+          style={{ backgroundColor: "#5cb85c" }}
+          duration={3000}
+          action={{
+            label: "DISMISS",
+            labelStyle: {
+              color: "white",
+              fontFamily: "ProtestStrike",
+            },
+          }}
+        >
+          <Text
+            variant="titleMedium"
+            style={{ color: "white", fontFamily: "ProtestStrike" }}
+          >
+            {status.success}
+          </Text>
+        </Snackbar>
+      )}
+    </View>
   );
 }
 
@@ -233,8 +385,23 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
+  backgroundImage: {
+    width: "100%",
+    height: "100%",
+  },
+  backgroundDim: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    width: 2000,
+    height: 2000,
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+  },
   keyboardAvoidingContainer: {
-    flex: 1
+    flex: 1,
+    position: "absolute",
+    width: "100%",
+    height: "100%",
   },
   container: {
     flex: 1,
@@ -260,6 +427,7 @@ const styles = StyleSheet.create({
   },
   nameInput: {
     flexGrow: 1,
+    backgroundColor: "transparent",
   },
   inputGroup: {
     width: "100%",
@@ -267,8 +435,12 @@ const styles = StyleSheet.create({
   },
   inputField: {
     width: "100%",
+    backgroundColor: "transparent",
   },
   title: {
+    fontFamily: "ProtestStrike",
+  },
+  text: {
     fontFamily: "ProtestStrike",
   },
   button: {

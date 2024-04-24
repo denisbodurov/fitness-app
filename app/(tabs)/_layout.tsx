@@ -63,9 +63,6 @@ export default function TabLayout() {
           },
           tabBarStyle: {
             ...styles.tabBar,
-            // position: pagesToHideTabBar.includes(page) ? "absolute" : "relative",
-            // marginTop: pagesToHideTabBar.includes(page) ? 9999 : 0,
-            // display: pagesToHideTabBar.includes(page) ? "none" : "flex", // Hide tab bar for listed routes
             backgroundColor: theme.colors.surface,
           },
           tabBarLabelStyle: styles.tabBarItemLabel,

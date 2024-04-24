@@ -22,19 +22,19 @@ export default function Workout({
           <Icon
             library="MaterialCommunityIcons"
             name="lightning-bolt"
-            color={difficulty === "beginner" ? "cyan" : difficulty === "intermediate" ? "orange" : "red"}
+            color={difficulty === 1 ? "cyan" : difficulty === 2 ? "orange" : "red"}
             size={24}
           />
           <Icon
             library="MaterialCommunityIcons"
             name="lightning-bolt"
-            color={difficulty == "beginner" ? "gray" : difficulty == "intermediate" ? "orange" : "red"}
+            color={difficulty == 1 ? "gray" : difficulty == 2 ? "orange" : "red"}
             size={24}
           />
           <Icon
             library="MaterialCommunityIcons"
             name="lightning-bolt"
-            color={difficulty == "beginner" ? "gray" : difficulty == "intermediate" ? "gray" : "red"}
+            color={difficulty == 1 ? "gray" : difficulty == 2 ? "gray" : "red"}
             size={24}
           />
         </View>

@@ -8,9 +8,7 @@ import {
   Text,
   useTheme,
 } from "react-native-paper";
-import {
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "@/components/Icon";
 import { useEffect, useState } from "react";
 import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebase-config";
@@ -20,31 +18,38 @@ import DifficultyBadge from "@/components/DifficultyBadge";
 import Timer from "@/components/Timer";
 import { exerciseGifs } from "@/constants/images";
 import { Image } from "expo-image";
+import { ExerciseState } from "@/types/states/Exercise";
 
 export default function WorkoutScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const id = usePathname();
-  const { slug } = useLocalSearchParams();
+  const path = usePathname();
+  const id = parseInt(path.split("/").pop()!);
 
-  const [workout, setWorkout] = useState<WorkoutPlan>();
+  const [status, setStatus] = useState({
+    isLoading: true,
+    error: "",
+  });
+  const [workout, setWorkout] = useState<WorkoutPlan | undefined>();
   const [modalVisible, setModalVisible] = useState(false);
 
   //Workout flow related states
+  const [isWorkoutStarted, setIsWorkoutStarted] = useState(false);
   const [currentSet, setCurrentSet] = useState(1);
   const [currentExercise, setCurrentExercise] = useState(0);
   const [seconds, setSeconds] = useState(0);
+  const [gifs, setGifs] = useState();
 
   useEffect(() => {
     const intervalId = setInterval(() => {
       setSeconds((prevSeconds) => prevSeconds + 1);
     }, 1000);
 
-    // Cleanup function to clear the interval when the component unmounts
     return () => clearInterval(intervalId);
   }, []);
 
   useEffect(() => {
+    setStatus({ ...status, isLoading: true });
     const fetchUserWorkouts = async () => {
       try {
         const currentUser = FIREBASE_AUTH.currentUser;
@@ -56,26 +61,40 @@ export default function WorkoutScreen() {
           const unsubscribe = onSnapshot(userRef, (docSnapshot) => {
             if (docSnapshot.exists()) {
               const userData = docSnapshot.data();
-              const userWorkouts = userData.workouts;
+              const selectedWorkout = userData.workouts[id];
 
-              if (userWorkouts) {
-                console.log(id);
-                const selectedWorkout =
-                  userWorkouts[parseInt(id.split("/").pop()!)]; // Get the exercise based on the slug
+              if (selectedWorkout) {
+                const selectedWorkoutGifs = selectedWorkout.exercises.map(
+                  (exe: any) => {
+                    console.log(exe)
+                    return exerciseGifs[
+                      exe.videoURL.split(".")[0] as keyof typeof exerciseGifs
+                    ];
+                  }
+                );
                 setWorkout(selectedWorkout);
-                console.log("selected workout: " + selectedWorkout);
-                console.log("Updated user workouts:", userWorkouts);
+                setGifs(selectedWorkoutGifs);
+              } else {
+                setStatus({
+                  ...status,
+                  error: `WORKOUT WITH ID ${id} NOT FOUND`,
+                });
               }
               // Use the updated workouts data here
             } else {
-              console.log("No user document found");
+              setStatus({ ...status, error: `USER DOCUMENT NOT FOUND` });
             }
           });
-
           return () => unsubscribe(); // Unsubscribe when component unmounts
+        } else {
+          setStatus({ ...status, error: "NO AUTH SESSION FOUND" });
         }
       } catch (error) {
-        console.error("Error fetching user workouts:", error);
+        setStatus({ ...status, error: `ERROR FETCHING WORKOUTS: ${error}` });
+      } finally {
+        setStatus((prevStatus) => {
+          return { ...prevStatus, isLoading: false };
+        });
       }
     };
 
@@ -99,13 +118,11 @@ export default function WorkoutScreen() {
   };
 
   const handleSkip = () => {
-    if(currentExercise + 1 < workout?.exercises.length!) {
-      setCurrentExercise(prevIndex => prevIndex + 1)
+    if (currentExercise + 1 < workout?.exercises.length!) {
+      setCurrentExercise((prevIndex) => prevIndex + 1);
     }
-
-
-  }
-  console.log(currentExercise)
+  };
+  console.log(currentExercise);
 
   return (
     <View
@@ -149,7 +166,7 @@ export default function WorkoutScreen() {
           <Text variant="headlineMedium" style={styles.workoutTitle}>
             {(workout && workout.title.toUpperCase()) || "NO NAME"}
           </Text>
-          <View style={styles.informationItemContainer}>
+          <View>
             {workout && <DifficultyBadge difficulty={workout.difficulty} />}
           </View>
           <View style={styles.informationItemContainer}>
@@ -222,10 +239,14 @@ export default function WorkoutScreen() {
             </View>
             <View style={styles.modalContent}>
               <View style={styles.modalGifContainer}>
-                {/* <Image source={gifs![currentExercise]} style={styles.gif}/> */}
-                <View style={styles.dim}/>
+                {gifs && (
+                  <Image source={gifs![currentExercise]} style={styles.gif} />
+                )}
+                <View style={styles.dim} />
                 <View style={styles.setsBadge}>
-                  <Text variant="titleLarge" style={styles.badgeText}>Set: {currentSet}/{workout?.exercises[currentExercise].sets}</Text>
+                  <Text variant="titleLarge" style={styles.badgeText}>
+                    Set: {currentSet}/{workout?.exercises[currentExercise].sets}
+                  </Text>
                 </View>
               </View>
               <View style={styles.modalButtonsContainer}>
@@ -240,7 +261,11 @@ export default function WorkoutScreen() {
                     TAP TO FINISH
                   </Text>
                 </Button>
-                <Button mode="contained" style={styles.modalButton} onPress={handleSkip}>
+                <Button
+                  mode="contained"
+                  style={styles.modalButton}
+                  onPress={handleSkip}
+                >
                   <Text
                     variant="titleMedium"
                     style={{
@@ -315,7 +340,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     objectFit: "contain",
     height: "75%",
-    width: "100%"
+    width: "100%",
   },
   setsBadge: {
     borderRadius: 30,
@@ -380,6 +405,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-start",
     alignItems: "flex-start",
+    paddingHorizontal: 10,
     gap: 10,
   },
   startButton: {

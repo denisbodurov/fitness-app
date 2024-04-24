@@ -1,6 +1,6 @@
 export interface ExerciseState {
-    order?: number;
     id: string;
+    order?: number;
     name: string;
     description: string;
     imageURL: string;

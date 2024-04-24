@@ -8,6 +8,7 @@ import {
   useTheme,
   ActivityIndicator,
   Snackbar,
+  Button,
 } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import PickerDialog from "@/components/PickerDialog";
@@ -17,12 +18,14 @@ import { en, registerTranslation } from "react-native-paper-dates";
 import { Settings } from "@/types/states/Settings";
 import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebase-config";
 import { collection, doc, getDoc, updateDoc } from "firebase/firestore";
+import useFirebase from "@/utils/hooks/useFirebase";
 
 registerTranslation("en", en);
 
 function SettingsScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const { signOut } = useFirebase();
 
   const [dialogStates, setDialogStates] = useState({
     weightDialog: false,
@@ -79,7 +82,7 @@ function SettingsScreen() {
             setStatus({ ...status, error: "RESOURCE NOT FOUND" });
           }
         } else {
-          setStatus({ ...status, error: "AUTH SESSION NOT FOUND" });
+          setStatus({ ...status, error: "NO AUTH SESSION FOUND" });
         }
       } catch (error) {
         setStatus({ ...status, error: `FAILED FETCHING DATA: ${error}` });
@@ -176,6 +179,11 @@ function SettingsScreen() {
       year: "numeric",
     }
   );
+
+  const handleSignOut = () => {
+    signOut()
+    router.navigate('/(auth)/sign-in')
+  }
 
   return (
     <View
@@ -336,6 +344,18 @@ function SettingsScreen() {
               />
             </TouchableOpacity>
           </View>
+          <Button
+          style={{
+            ...styles.logoutButton,
+            backgroundColor: theme.colors.primary,
+          }}
+          mode="contained"
+          onPress={handleSignOut}
+        >
+          <Text variant="titleMedium" style={{...styles.logoutText, color: theme.colors.onPrimary}}>
+            SIGN OUT
+          </Text>{" "}
+        </Button>
         </View>
       )}
 
@@ -398,7 +418,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 15,
     paddingVertical: 10,
-    borderRadius: 25,
+    borderRadius: 20,
     borderWidth: 1,
   },
   separator: {
@@ -413,6 +433,12 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
+  },
+  logoutButton: {
+    width: "100%",
+  },
+  logoutText: {
+    fontFamily: "ProtestStrike"
   },
 });
 

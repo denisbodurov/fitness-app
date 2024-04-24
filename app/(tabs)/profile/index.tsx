@@ -13,13 +13,8 @@ export default function ProfileScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
 
-  const { signOut } = useFirebase();
   const { user } = useContext(FirebaseContext)
 
-  const handleSignOut = () => {
-    signOut()
-    router.navigate('/(auth)/sign-in')
-  }
 
   const mockStats = {
     workouts: 48,
@@ -182,20 +177,22 @@ export default function ProfileScreen() {
                   />
                 )}
               />
+              <List.Item
+                title={`BMI: ${"20.99"} (Normal)`}
+                titleStyle={{ ...style.title, color: theme.colors.onSurface }}
+                left={() => (
+                  <Icon
+                    library="FontAwesome"
+                    name="heartbeat"
+                    color={theme.colors.primary}
+                    size={28}
+                  />
+                )}
+              />
             </List.Section>
           </View>
         </View>
-        <Button
-          style={{
-            ...style.logoutButton,
-            backgroundColor: theme.colors.surface,
-          }}
-          onPress={handleSignOut}
-        >
-          <Text variant="titleMedium" style={style.logoutText}>
-            SIGN OUT
-          </Text>{" "}
-        </Button>
+
       </ScrollView>
     </View>
   );
@@ -265,12 +262,5 @@ const style = StyleSheet.create({
     borderRadius: 10,
     padding: 5,
   },
-  logoutButton: {
-    width: "100%",
-    elevation: 3
-  },
-  logoutText: {
-    color: "red",
-    fontFamily: "ProtestStrike"
-  },
+
 });
