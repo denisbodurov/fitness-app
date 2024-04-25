@@ -36,6 +36,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "ec56d810-4516-40ba-8c2a-889cd3a7c746"
+      }
+    },
+    "owner": "denitsu"
   }
 }
