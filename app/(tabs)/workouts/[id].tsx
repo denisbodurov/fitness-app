@@ -5,6 +5,7 @@ import {
   IconButton,
   Modal,
   Portal,
+  Snackbar,
   Text,
   useTheme,
 } from "react-native-paper";
@@ -12,41 +13,63 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "@/components/Icon";
 import { useEffect, useState } from "react";
 import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebase-config";
-import { doc, onSnapshot } from "firebase/firestore";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  onSnapshot,
+  updateDoc,
+} from "firebase/firestore";
 import { WorkoutPlan } from "@/types/states/Plan";
 import DifficultyBadge from "@/components/DifficultyBadge";
 import Timer from "@/components/Timer";
 import { exerciseGifs } from "@/constants/images";
 import { Image } from "expo-image";
-import { ExerciseState } from "@/types/states/Exercise";
+import PromptDialog from "@/components/PromptDialog";
 
 export default function WorkoutScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const path = usePathname();
-  const id = parseInt(path.split("/").pop()!);
+  const workoutId = path.split("/").pop()!;
 
   const [status, setStatus] = useState({
     isLoading: true,
+    deleting: false,
     error: "",
   });
   const [workout, setWorkout] = useState<WorkoutPlan | undefined>();
   const [modalVisible, setModalVisible] = useState(false);
+  const [dialogVisible, setDialogVisible] = useState(false);
 
   //Workout flow related states
   const [isWorkoutStarted, setIsWorkoutStarted] = useState(false);
+  const [rest, setRest] = useState(0);
+  const [restLabel, setRestLabel] = useState("");
+  const [isWorkoutFinished, setIsWorkoutFinished] = useState(false);
+
   const [currentSet, setCurrentSet] = useState(1);
   const [currentExercise, setCurrentExercise] = useState(0);
+
   const [seconds, setSeconds] = useState(0);
   const [gifs, setGifs] = useState();
 
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      setSeconds((prevSeconds) => prevSeconds + 1);
-    }, 1000);
+    let intervalId: NodeJS.Timeout;
+
+    if (isWorkoutStarted) {
+      intervalId = setInterval(() => {
+        setSeconds((prevSeconds) => prevSeconds + 1);
+
+        if (rest > 0) {
+          setRest((prevRest) => prevRest - 1);
+        }
+      }, 1000);
+    }
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [isWorkoutStarted, rest]);
 
   useEffect(() => {
     setStatus({ ...status, isLoading: true });
@@ -57,40 +80,55 @@ export default function WorkoutScreen() {
         if (currentUser) {
           const uid = currentUser.uid;
           const userRef = doc(FIREBASE_DB, "users", uid);
+          const workoutRef = doc(userRef, "workouts", workoutId);
 
-          const unsubscribe = onSnapshot(userRef, (docSnapshot) => {
+          const unsubscribe = onSnapshot(workoutRef, (docSnapshot) => {
             if (docSnapshot.exists()) {
-              const userData = docSnapshot.data();
-              const selectedWorkout = userData.workouts[id];
+              const workoutData = docSnapshot.data();
 
-              if (selectedWorkout) {
-                const selectedWorkoutGifs = selectedWorkout.exercises.map(
+              if (workoutData) {
+                const selectedWorkoutGifs = workoutData.exercises.map(
                   (exe: any) => {
-                    console.log(exe)
                     return exerciseGifs[
                       exe.videoURL.split(".")[0] as keyof typeof exerciseGifs
                     ];
                   }
                 );
+
+                const selectedWorkout = {
+                  id: docSnapshot.id,
+                  title: workoutData.title,
+                  difficulty: workoutData.difficulty,
+                  setRest: workoutData.setRest,
+                  exerciseRest: workoutData.exerciseRest,
+                  exercises: workoutData.exercises,
+                };
+
                 setWorkout(selectedWorkout);
                 setGifs(selectedWorkoutGifs);
               } else {
                 setStatus({
                   ...status,
-                  error: `WORKOUT WITH ID ${id} NOT FOUND`,
+                  error: `WORKOUT WITH ID ${workoutId} NOT FOUND`,
                 });
               }
               // Use the updated workouts data here
             } else {
-              setStatus({ ...status, error: `USER DOCUMENT NOT FOUND` });
+              setStatus((prevStatus) => {
+                return { ...prevStatus, error: `USER DOCUMENT NOT FOUND` };
+              });
             }
           });
           return () => unsubscribe(); // Unsubscribe when component unmounts
         } else {
-          setStatus({ ...status, error: "NO AUTH SESSION FOUND" });
+          setStatus((prevStatus) => {
+            return { ...prevStatus, error: `NO AUTH SESSION FOUND` };
+          });
         }
       } catch (error) {
-        setStatus({ ...status, error: `ERROR FETCHING WORKOUTS: ${error}` });
+        setStatus((prevStatus) => {
+          return { ...prevStatus, error: `ERROR FETCHING WORKOUT: ${error}` };
+        });
       } finally {
         setStatus((prevStatus) => {
           return { ...prevStatus, isLoading: false };
@@ -99,7 +137,7 @@ export default function WorkoutScreen() {
     };
 
     fetchUserWorkouts();
-  }, [id]); // Re-run effect when the slug changes
+  }, [workoutId]); // Re-run effect when the slug changes
 
   const getTargetMuscles = () => {
     if (workout) {
@@ -117,12 +155,108 @@ export default function WorkoutScreen() {
     }
   };
 
-  const handleSkip = () => {
-    if (currentExercise + 1 < workout?.exercises.length!) {
-      setCurrentExercise((prevIndex) => prevIndex + 1);
+  const handleActivityUpdate = async () => {
+    const activityData = {
+      seconds: seconds,
+      date: new Date(),
+    };
+
+    try {
+      const currentUser = FIREBASE_AUTH.currentUser;
+      if (currentUser) {
+        const uid = currentUser.uid;
+        const userRef = doc(collection(FIREBASE_DB, "users"), uid);
+
+        const userSnapshot = await getDoc(userRef);
+
+        if (!userSnapshot.exists()) {
+          console.log("User document not found");
+          return;
+        }
+
+        const userDoc = userSnapshot.data();
+        let activityArray = userDoc.activity || [];
+
+        activityArray.push(activityData);
+
+        await updateDoc(userRef, { activity: activityArray });
+      } else {
+        setStatus({ ...status, error: "AUTH SESSION NOT FOUND" });
+      }
+    } catch (error) {
+      setStatus({ ...status, error: `SOMETHING WENT WRONG: ${error}` });
+      // Handle errors appropriately (e.g., display error message to user)
     }
   };
-  console.log(currentExercise);
+
+  const handleStart = () => {
+    if (workout && workout.exercises.length > 0) {
+      setModalVisible(true);
+      setRestLabel("WORKOUT STARTING IN");
+      setRest(3);
+      setIsWorkoutStarted(true);
+    } else {
+      setStatus({ ...status, error: "NO EXERCISES FOUND" });
+    }
+  };
+
+  const handleSkip = () => {
+    if (rest > 0) {
+      setRest(0);
+    } else {
+      if (currentExercise + 1 < workout?.exercises.length!) {
+        setCurrentExercise((prevIndex) => prevIndex + 1);
+        setCurrentSet(1);
+        setRestLabel("TAKE A REST");
+        setRest(workout?.exerciseRest!);
+      } else {
+        setIsWorkoutStarted(false);
+        setIsWorkoutFinished(true);
+        handleActivityUpdate();
+      }
+    }
+  };
+
+  const handleFinish = () => {
+    if (rest > 0) {
+      setRest(0);
+    } else {
+      if (currentSet + 1 <= workout?.exercises[currentExercise].sets!) {
+        setCurrentSet((prevSet) => prevSet + 1);
+        setRestLabel("TAKE A REST");
+        setRest(workout?.setRest!);
+      } else {
+        handleSkip();
+      }
+    }
+  };
+
+  const handleDelete = async () => {
+    setStatus((prevStatus) => {
+      return { ...prevStatus, deleting: true };
+    });
+    try {
+      const currentUser = FIREBASE_AUTH.currentUser;
+
+      if (currentUser) {
+        const uid = currentUser.uid;
+        const userRef = doc(FIREBASE_DB, "users", uid);
+        const workoutsRef = collection(userRef, "workouts");
+
+        // Construct a reference to the specific workout document
+        const workoutRef = doc(workoutsRef, workoutId);
+
+        // Delete the workout document
+        await deleteDoc(workoutRef);
+
+        router.back();
+      } else {
+        console.error("No user logged in");
+      }
+    } catch (error) {
+      console.error("Error deleting workout plan:", error);
+    }
+  };
 
   return (
     <View
@@ -150,7 +284,9 @@ export default function WorkoutScreen() {
             icon="trash-can"
             iconColor={theme.colors.primary}
             size={26}
-            onPress={() => console.log("Pressed")}
+            onPress={() => {
+              setDialogVisible(true);
+            }}
           />
           <IconButton
             icon="square-edit-outline"
@@ -160,6 +296,13 @@ export default function WorkoutScreen() {
           />
         </View>
       </View>
+
+      <PromptDialog
+        visible={dialogVisible}
+        onCancel={() => setDialogVisible(false)}
+        onConfirm={handleDelete}
+        theme={theme}
+      />
 
       <View style={styles.contentContainer}>
         <View style={styles.informationContainer}>
@@ -180,7 +323,7 @@ export default function WorkoutScreen() {
               variant="titleMedium"
               style={{ ...styles.text, color: theme.colors.outline }}
             >
-              {getTargetMuscles()}
+              {getTargetMuscles() || "N/A"}
             </Text>
           </View>
           <View style={styles.informationItemContainer}>
@@ -194,7 +337,7 @@ export default function WorkoutScreen() {
               variant="titleMedium"
               style={{ ...styles.text, color: theme.colors.outline }}
             >
-              {(workout && workout.exercises.length) || "N/A"} EXERCISES
+              {(workout && workout.exercises.length) + " EXERCISES"}
             </Text>
           </View>
         </View>
@@ -204,7 +347,7 @@ export default function WorkoutScreen() {
             backgroundColor: theme.colors.primary,
           }}
           mode="contained"
-          onPress={() => setModalVisible(true)}
+          onPress={handleStart}
         >
           <Text
             variant="titleMedium"
@@ -213,74 +356,194 @@ export default function WorkoutScreen() {
             START WORKOUT
           </Text>
         </Button>
-        <Portal>
-          <Modal
-            visible={modalVisible}
-            onDismiss={() => setModalVisible(false)}
-            contentContainerStyle={{
-              ...styles.modal,
-              backgroundColor: theme.colors.background,
+        {!status.error &&
+          !status.isLoading &&
+          workout &&
+          workout.exercises.length > 0 && (
+            <Portal>
+              <Modal
+                visible={modalVisible}
+                onDismiss={() => setModalVisible(false)}
+                contentContainerStyle={{
+                  ...styles.modal,
+                  backgroundColor: theme.colors.background,
+                }}
+              >
+                {isWorkoutFinished ? (
+                  <View style={styles.finishedContainer}>
+                    <Text
+                      variant="headlineLarge"
+                      style={{ ...styles.text, color: theme.colors.primary }}
+                    >
+                      WORKOUT FINISHED
+                    </Text>
+                    <View style={styles.timerContainer}>
+                      <Text variant="headlineSmall" style={styles.text}>
+                        TOTAL TIME
+                      </Text>
+                      <Timer seconds={seconds} size={24} />
+                    </View>
+
+                    <Button
+                      mode="contained"
+                      style={styles.modalButton}
+                      onPress={() => router.navigate("/(tabs)/workouts")}
+                    >
+                      <Text
+                        variant="titleMedium"
+                        style={{
+                          ...styles.modalButtonText,
+                          color: theme.colors.onPrimary,
+                        }}
+                      >
+                        BACK TO WORKOUTS
+                      </Text>
+                    </Button>
+                  </View>
+                ) : (
+                  <>
+                    <View
+                      style={{
+                        ...styles.header,
+                        backgroundColor: theme.colors.surface,
+                      }}
+                    >
+                      <IconButton
+                        icon="close"
+                        size={30}
+                        iconColor={theme.colors.onSurface}
+                        rippleColor={"rgba(125,125,125,0.2)"}
+                        onPress={() => setModalVisible(false)}
+                      />
+                      <Timer seconds={seconds} />
+                    </View>
+
+                    <View style={styles.modalContent}>
+                      {rest > 0 ? (
+                        <View style={styles.restContainer}>
+                          <Text
+                            style={{
+                              ...styles.restLabel,
+                              color: theme.colors.onBackground,
+                            }}
+                            variant="headlineMedium"
+                          >
+                            {restLabel}
+                          </Text>
+                          <Text
+                            style={{
+                              ...styles.restLabel,
+                              color: theme.colors.primary,
+                            }}
+                            variant="headlineLarge"
+                          >
+                            {rest}
+                          </Text>
+                        </View>
+                      ) : (
+                        <View style={styles.modalGifContainer}>
+                          {gifs && (
+                            <Image
+                              source={gifs![currentExercise]}
+                              style={styles.gif}
+                            />
+                          )}
+                          <View style={styles.dim} />
+                          <View style={styles.exerciseInfoContainer}>
+                            <Text
+                              variant="headlineLarge"
+                              style={{ ...styles.badgeText, color: "white" }}
+                            >
+                              {workout?.exercises &&
+                                workout?.exercises[
+                                  currentExercise
+                                ].name.toUpperCase()}{" "}
+                              X {workout?.exercises[currentExercise].reps}
+                            </Text>
+                            <View style={styles.setsBadge}>
+                              <Text
+                                variant="titleLarge"
+                                style={styles.badgeText}
+                              >
+                                Set: {currentSet}/
+                                {workout?.exercises &&
+                                  workout?.exercises[currentExercise].sets}
+                              </Text>
+                            </View>
+                          </View>
+                        </View>
+                      )}
+                      <View style={styles.modalButtonsContainer}>
+                        <Button
+                          mode="contained"
+                          style={styles.modalButton}
+                          onPress={handleFinish}
+                        >
+                          <Text
+                            variant="titleMedium"
+                            style={{
+                              ...styles.modalButtonText,
+                              color: theme.colors.onPrimary,
+                            }}
+                          >
+                            TAP WHEN DONE
+                          </Text>
+                        </Button>
+                        <Button
+                          mode="contained"
+                          style={styles.modalButton}
+                          onPress={handleSkip}
+                        >
+                          <Text
+                            variant="titleMedium"
+                            style={{
+                              ...styles.modalButtonText,
+                              color: theme.colors.onPrimary,
+                            }}
+                          >
+                            SKIP EXERCISE
+                          </Text>
+                        </Button>
+                      </View>
+                    </View>
+                  </>
+                )}
+              </Modal>
+            </Portal>
+          )}
+      </View>
+      {!status.deleting && status.error && (
+        <Snackbar
+          visible={status.error ? true : false}
+          onDismiss={() =>
+            setStatus((prevStatus) => {
+              return { ...prevStatus, error: "" };
+            })
+          }
+          style={{
+            paddingRight: 10,
+            backgroundColor: theme.colors.errorContainer,
+          }}
+          duration={3000}
+          action={{
+            label: "DISMISS",
+            labelStyle: {
+              color: theme.colors.onBackground,
+              fontFamily: "ProtestStrike",
+            },
+          }}
+        >
+          <Text
+            variant="titleMedium"
+            style={{
+              color: theme.colors.onErrorContainer,
+              fontFamily: "ProtestStrike",
             }}
           >
-            <View
-              style={{
-                ...styles.header,
-                backgroundColor: theme.colors.surface,
-              }}
-            >
-              <IconButton
-                icon="close"
-                size={30}
-                iconColor={theme.colors.onSurface}
-                rippleColor={"rgba(125,125,125,0.2)"}
-                onPress={() => setModalVisible(false)}
-              />
-              <Timer seconds={seconds} />
-            </View>
-            <View style={styles.modalContent}>
-              <View style={styles.modalGifContainer}>
-                {gifs && (
-                  <Image source={gifs![currentExercise]} style={styles.gif} />
-                )}
-                <View style={styles.dim} />
-                <View style={styles.setsBadge}>
-                  <Text variant="titleLarge" style={styles.badgeText}>
-                    Set: {currentSet}/{workout?.exercises[currentExercise].sets}
-                  </Text>
-                </View>
-              </View>
-              <View style={styles.modalButtonsContainer}>
-                <Button mode="contained" style={styles.modalButton}>
-                  <Text
-                    variant="titleMedium"
-                    style={{
-                      ...styles.modalButtonText,
-                      color: theme.colors.onPrimary,
-                    }}
-                  >
-                    TAP TO FINISH
-                  </Text>
-                </Button>
-                <Button
-                  mode="contained"
-                  style={styles.modalButton}
-                  onPress={handleSkip}
-                >
-                  <Text
-                    variant="titleMedium"
-                    style={{
-                      ...styles.modalButtonText,
-                      color: theme.colors.onPrimary,
-                    }}
-                  >
-                    SKIP EXERCISE
-                  </Text>
-                </Button>
-              </View>
-            </View>
-          </Modal>
-        </Portal>
-      </View>
+            {status.error}
+          </Text>
+        </Snackbar>
+      )}
     </View>
   );
 }
@@ -344,11 +607,18 @@ const styles = StyleSheet.create({
   },
   setsBadge: {
     borderRadius: 30,
-    marginBottom: 30,
     paddingHorizontal: 20,
     paddingVertical: 5,
     backgroundColor: "white",
     elevation: 3,
+  },
+  exerciseInfoContainer: {
+    flexDirection: "column",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 30,
+    height: "auto",
+    gap: 10,
   },
   badgeText: {
     color: "black",
@@ -365,7 +635,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     left: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
     width: "100%",
     height: "100%",
   },
@@ -414,5 +684,28 @@ const styles = StyleSheet.create({
   },
   startButtonText: {
     fontFamily: "ProtestStrike",
+  },
+  restContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  restLabel: {
+    fontFamily: "ProtestStrike",
+  },
+  finishedContainer: {
+    flex: 1,
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 30,
+    gap: 20,
+  },
+  timerContainer: {
+    width: "100%",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 5,
   },
 });

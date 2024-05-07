@@ -21,7 +21,7 @@ export const DarkTheme = {
     "onErrorContainer": "rgb(255, 180, 171)",
     "background": "rgb(27, 27, 31)",
     "onBackground": "rgb(228, 225, 230)",
-    "surface": "rgb(27, 27, 31)",
+    "surface": "rgb(37, 37, 41)",
     "onSurface": "rgb(228, 225, 230)",
     "surfaceVariant": "rgb(70, 70, 79)",
     "onSurfaceVariant": "rgb(199, 197, 208)",

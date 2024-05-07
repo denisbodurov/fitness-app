@@ -1,7 +1,7 @@
 import Icon from "@/components/Icon";
 import { useEffect, useState } from "react";
 import { Platform, StyleSheet, View } from "react-native";
-import { Text, useTheme } from "react-native-paper";
+import { ActivityIndicator, Text, useTheme } from "react-native-paper";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import WorkoutList from "@/components/WorkoutList";
@@ -12,11 +12,14 @@ import Progress from "@/components/Progress";
 import { WorkoutData } from "@/types/components/Workout";
 import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebase-config";
+import { Activity } from "@/types/states/Activity";
+import { ProgressData } from "@/types/components/Progress";
 
 export default function HomeScreen() {
   const [schedule, setSchedule] = useState<ScheduleData>(defaultSchedule);
   const [defaultWorkouts, setDefaultWorkouts] = useState("");
-  const [dailyProgress, setDailyProgress] = useState();
+  const [dailyProgress, setDailyProgress] = useState<ProgressData | undefined>();
+
   const [status, setStatus] = useState({
     isLoading: true,
     error: "",
@@ -39,20 +42,56 @@ export default function HomeScreen() {
           const unsubscribe = onSnapshot(userRef, (docSnapshot) => {
             if (docSnapshot.exists()) {
               const userSchedule = docSnapshot.data().schedule || null;
-              setSchedule(userSchedule);
-              console.log("Updated user schedule:", userSchedule);
-              // Use the updated schedule data here
+              const activity = docSnapshot.data().activity || [];
+
+              if (userSchedule) {
+                setSchedule(userSchedule);
+              } else {
+                setStatus({ ...status, error: "COULD NOT FETCH SCHEDULE" });
+              }
+
+              const todaysActivities = activity.filter(
+                (currentActivity: Activity) => {
+                  const activityDate = currentActivity.date.toDate();
+
+                  const today = new Date();
+                  return (
+                    activityDate.getFullYear() === today.getFullYear() &&
+                    activityDate.getMonth() === today.getMonth() &&
+                    activityDate.getDate() === today.getDate()
+                  );
+                }
+              );
+
+              if (todaysActivities) {
+                const totalMinutes = Math.floor(
+                  todaysActivities.reduce(
+                    (acc: number, activity: Activity) => acc + activity.seconds,
+                    0
+                  ) / 60
+                );
+                setDailyProgress({
+                  workouts: todaysActivities.length,
+                  minutes: totalMinutes,
+                });
+              } else {
+                setDailyProgress({ workouts: 0, minutes: 0 });
+              }
             } else {
-              console.log("No user document found");
-              setSchedule(defaultSchedule); // Reset schedule if document doesn't exist
+              setStatus({ ...status, error: "USER NOT FOUND" });
             }
           });
 
           return () => unsubscribe(); // Unsubscribe when component unmounts
+        } else {
+          setStatus({ ...status, error: "NO AUTH SESSION FOUND" });
         }
-
       } catch (error) {
-        console.error("Error fetching user schedule:", error);
+        setStatus({ ...status, error: `FAILED FETCHING DATA: ${error}` });
+      } finally {
+        setStatus((prevStatus) => {
+          return { ...prevStatus, isLoading: false };
+        });
       }
     };
 
@@ -90,20 +129,96 @@ export default function HomeScreen() {
     },
   ];
 
-  const mockStats = {
-    workouts: 12,
-    calories: 1204,
-    minutes: 120,
-  };
-
-  useEffect(() => {
-    try {
-      //Try to fetch data
-    } catch {
-      //Catch thrown errors and set default data
-      setSchedule(defaultSchedule);
+  const renderContent = () => {
+    if (status.isLoading) {
+      return (
+        <View style={style.statusContainer}>
+          <ActivityIndicator animating={true} size="large" />
+        </View>
+      );
     }
-  }, []);
+
+    if (status.error) {
+      return (
+        <View style={style.statusContainer}>
+          <Text variant="headlineLarge">SOMETHING WENT WRONG</Text>
+        </View>
+      );
+    }
+
+    if (schedule && dailyProgress) {
+      return (
+        <ScrollView
+          contentContainerStyle={{
+            ...style.body,
+
+            backgroundColor: theme.colors.background,
+          }}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Data container providing information about the user's daily progress */}
+          <View style={style.section}>
+            <View style={style.sectionTitleContainer}>
+              <Icon
+                library="MaterialCommunityIcons"
+                name="progress-check"
+                color={theme.colors.primary}
+              />
+              <Text style={style.sectionTitle} variant="headlineSmall">
+                DAILY PROGRESS
+              </Text>
+            </View>
+
+            <View
+              style={{
+                ...style.progressContainer,
+                backgroundColor: theme.colors.surface,
+              }}
+            >
+              <Progress data={dailyProgress} theme={theme} />
+            </View>
+          </View>
+          {/* Data container that provides info about the user's weekly workout schedule */}
+          <View style={style.section}>
+            <View style={style.sectionTitleContainer}>
+              <Icon
+                library="FontAwesome"
+                name="calendar"
+                color={theme.colors.primary}
+              />
+              <Text style={style.sectionTitle} variant="headlineSmall">
+                SCHEDULE
+              </Text>
+            </View>
+            <Schedule scheduleData={schedule} theme={theme} />
+          </View>
+          {/* Three separate sections with workouts of 3 different difficulty levels */}
+          <View style={style.section}>
+            <View style={style.sectionTitleContainer}>
+              <Text style={style.sectionTitle} variant="headlineSmall">
+                BEGINNER
+              </Text>
+            </View>
+            <WorkoutList data={mockData} theme={theme} />
+          </View>
+          <View style={style.section}>
+            <View style={style.sectionTitleContainer}>
+              <Text style={style.sectionTitle} variant="headlineSmall">
+                INTERMEDIATE
+              </Text>
+            </View>
+          </View>
+          <View style={style.section}>
+            <View style={style.sectionTitleContainer}>
+              <Text style={style.sectionTitle} variant="headlineSmall">
+                ADVANCED
+              </Text>
+            </View>
+          </View>
+        </ScrollView>
+      );
+    }
+  };
 
   return (
     <View
@@ -115,74 +230,7 @@ export default function HomeScreen() {
         paddingBottom: Platform.OS === "android" ? insets.bottom : 0,
       }}
     >
-      <ScrollView
-        contentContainerStyle={{
-          ...style.body,
-
-          backgroundColor: theme.colors.background,
-        }}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Data container providing information about the user's daily progress */}
-        <View style={style.section}>
-          <View style={style.sectionTitleContainer}>
-            <Icon
-              library="MaterialCommunityIcons"
-              name="progress-check"
-              color={theme.colors.primary}
-            />
-            <Text style={style.sectionTitle} variant="headlineSmall">
-              DAILY PROGRESS
-            </Text>
-          </View>
-
-          <View
-            style={{
-              ...style.progressContainer,
-              backgroundColor: theme.colors.surface,
-            }}
-          >
-            <Progress data={mockStats} theme={theme} />
-          </View>
-        </View>
-        {/* Data container that provides info about the user's weekly workout schedule */}
-        <View style={style.section}>
-          <View style={style.sectionTitleContainer}>
-            <Icon
-              library="FontAwesome"
-              name="calendar"
-              color={theme.colors.primary}
-            />
-            <Text style={style.sectionTitle} variant="headlineSmall">
-              SCHEDULE
-            </Text>
-          </View>
-          <Schedule scheduleData={schedule} theme={theme} />
-        </View>
-        {/* Three separate sections with workouts of 3 different difficulty levels */}
-        <View style={style.section}>
-          <View style={style.sectionTitleContainer}>
-            <Text style={style.sectionTitle} variant="headlineSmall">
-              BEGINNER
-            </Text>
-          </View>
-          <WorkoutList data={mockData} theme={theme} />
-        </View>
-        <View style={style.section}>
-          <View style={style.sectionTitleContainer}>
-            <Text style={style.sectionTitle} variant="headlineSmall">
-              INTERMEDIATE
-            </Text>
-          </View>
-        </View>
-        <View style={style.section}>
-          <View style={style.sectionTitleContainer}>
-            <Text style={style.sectionTitle} variant="headlineSmall">
-              ADVANCED
-            </Text>
-          </View>
-        </View>
-      </ScrollView>
+      {renderContent()}
     </View>
   );
 }
@@ -230,5 +278,11 @@ const style = StyleSheet.create({
     flexDirection: "row",
     padding: 0,
     gap: 5,
+  },
+  statusContainer: {
+    flex: 1,
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

@@ -2,8 +2,9 @@ import CustomPlan from "@/components/CustomPlan";
 import Icon from "@/components/Icon";
 import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebase-config";
 import { WorkoutPlan } from "@/types/states/Plan";
+import { isLoading } from "expo-font";
 import { Link, useNavigation } from "expo-router";
-import { doc, onSnapshot } from "firebase/firestore";
+import { collection, doc, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import {
   Platform,
@@ -12,7 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Searchbar, useTheme } from "react-native-paper";
+import { Text, ActivityIndicator, Searchbar, useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function WorkoutsScreen() {
@@ -20,10 +21,17 @@ export default function WorkoutsScreen() {
   const insets = useSafeAreaInsets();
 
   const [workouts, setWorkouts] = useState<WorkoutPlan[]>([]);
+  const [filteredWorkouts, setFilteredWorkouts] = useState<WorkoutPlan[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [status, setStatus] = useState({
+    isLoading: true,
+    noWorkouts: false,
+    error: "",
+  });
 
   useEffect(() => {
     const fetchUserWorkouts = async () => {
+
       try {
         const currentUser = FIREBASE_AUTH.currentUser;
 
@@ -31,51 +39,125 @@ export default function WorkoutsScreen() {
           const uid = currentUser.uid;
           const userRef = doc(FIREBASE_DB, "users", uid);
 
-          // Listen for real-time updates on the user document
-          const unsubscribe = onSnapshot(userRef, (docSnapshot) => {
-            if (docSnapshot.exists()) {
-              const userData = docSnapshot.data();
-              const userWorkouts = userData.workouts || [];
-              setWorkouts(userWorkouts);
-              console.log(userWorkouts[1]);
-              console.log("Updated user workouts:", userWorkouts);
-              // Use the updated workouts data here
+          // Get a reference to the workouts subcollection
+          const workoutsRef = collection(userRef, "workouts");
+          
+          // Listen for real-time updates on the workouts subcollection
+          const unsubscribe = onSnapshot(workoutsRef, (querySnapshot) => {
+            const fetchedWorkouts: WorkoutPlan[] = []; // Use the interface for type
+              querySnapshot.forEach((doc) => {
+                const workoutData = doc.data();
+                fetchedWorkouts.push({
+                  id: doc.id,
+                  title: workoutData.title,
+                  difficulty: workoutData.difficulty,
+                  setRest: workoutData.setRest,
+                  exerciseRest: workoutData.exerciseRest,
+                  exercises: workoutData.exercises,
+                });
+              });
+
+            if (fetchedWorkouts.length === 0) {
+              setStatus((prevStatus) => {
+                return { ...prevStatus, noWorkouts: true};
+              });
             } else {
-              console.log("No user document found");
-              setWorkouts([]);
+              setStatus((prevStatus) => {
+                return { ...prevStatus, noWorkouts: false};
+              });
+              setWorkouts(fetchedWorkouts);
+              setFilteredWorkouts(fetchedWorkouts);
             }
+    
           });
 
           return () => unsubscribe(); // Unsubscribe when component unmounts
+        } else {
+          setStatus((prevStatus) => {
+            return { ...prevStatus, error: "NO AUTH SESSION FOUND"};
+          });
         }
       } catch (error) {
-        console.error("Error fetching user workouts:", error);
+        setStatus((prevStatus) => {
+          return { ...prevStatus, error: `COULD NOT FETCH WORKOS: ${error}`};
+        });
+      } finally {
+        setStatus((prevStatus) => {
+          return { ...prevStatus, isLoading: false };
+        });
       }
     };
 
     fetchUserWorkouts();
   }, []); // Empty dependency array ensures useEffect runs only once
+  
 
-  const mockData = [
-    {
-      title: "ARMS WORKOUT",
-      information: "16 EXERCISES - 12 MINUTES",
-      difficulty: 1,
-      id: 1,
-    },
-    {
-      title: "LEGS WORKOUT",
-      information: "6 EXERCISES - 9 MINUTES",
-      difficulty: 2,
-      id: 2,
-    },
-    {
-      title: "ABS WORKOUT",
-      information: "12 EXERCISES - 11 MINUTES",
-      difficulty: 3,
-      id: 3,
-    },
-  ];
+  const applyFilter = () => {
+    if (searchQuery === "") {
+      setFilteredWorkouts(workouts); // Show all workouts if search is empty
+      return;
+    }
+
+    const filtered = workouts.filter((workout) =>
+      workout.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    setFilteredWorkouts(filtered);
+  };
+
+  // Handle search query changes and trigger filtering
+  useEffect(() => {
+    const timeoutId = setTimeout(applyFilter, 500); // Debounce for smoother experience
+
+    return () => clearTimeout(timeoutId); // Clear timeout when unmounted or search changes
+  }, [searchQuery, workouts]); // Dependency array: update on searchQuery change
+
+  const renderContent = () => {
+
+    if (status.isLoading) {
+      return (
+        <View style={styles.statusContainer}>
+          <ActivityIndicator animating={true} size="large" />
+        </View>
+      );
+    }
+
+    if (status.error) {
+      return (
+        <View style={styles.statusContainer}>
+          <Text variant="headlineLarge" style={styles.text}>SOMETHING WENT WRONG</Text>
+        </View>
+      );
+    }
+
+    if(status.noWorkouts) {
+      return (
+      <View style={styles.statusContainer}>
+        <Text variant="headlineMedium" style={{...styles.text, color: theme.colors.outline}}>NO WORKOUT PLANS YET</Text>
+      </View>
+      )
+    }
+    
+
+    if(filteredWorkouts) {
+      return (
+        <ScrollView>
+        {filteredWorkouts.map((workout, index) => {
+          return (
+            <CustomPlan
+              key={index}
+              id={workout.id}
+              title={workout.title}
+              information={workout.exercises.length}
+              difficulty={workout.difficulty}
+              theme={theme}
+            />
+          );
+        })}
+      </ScrollView>
+      )
+    }
+  }
 
   return (
     <View
@@ -106,20 +188,7 @@ export default function WorkoutsScreen() {
           </TouchableOpacity>
         </Link>
       </View>
-      <ScrollView>
-        {workouts.map((workout, index) => {
-          return (
-            <CustomPlan
-              key={index}
-              id={index}
-              title={workout.title}
-              information={workout.exercises.length}
-              difficulty={workout.difficulty}
-              theme={theme}
-            />
-          );
-        })}
-      </ScrollView>
+      {renderContent()}
     </View>
   );
 }
@@ -140,4 +209,13 @@ const styles = StyleSheet.create({
   searchbar: {
     width: "90%",
   },
+  statusContainer: {
+    flex: 1,
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",  
+  },
+  text: {
+    fontFamily: "ProtestStrike",
+  }
 });

@@ -6,7 +6,7 @@ import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebase-config";
 import { ExerciseState } from "@/types/states/Exercise";
 import { WorkoutPlan } from "@/types/states/Plan";
 import { router, useNavigation } from "expo-router";
-import { collection, doc, getDoc, getDocs, updateDoc } from "firebase/firestore";
+import { addDoc, collection, doc, getDoc, getDocs, updateDoc } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet, ScrollView, Platform } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
@@ -19,6 +19,7 @@ import {
   Modal,
   Dialog,
   IconButton,
+  Snackbar,
 } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -29,6 +30,8 @@ const WorkoutForm = () => {
   const [isFocus, setIsFocus] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
+  const [error, setError] = useState("")
+
   const [selectedExercise, setSelectedExercise] = useState<ExerciseState>();
   const [availableExercises, setAvailableExercises] = useState<ExerciseState[]>(
     []
@@ -38,6 +41,7 @@ const WorkoutForm = () => {
   const [reps, setReps] = useState("");
 
   const [plan, setPlan] = useState<WorkoutPlan>({
+    id: "",
     title: "",
     difficulty: 1,
     setRest: 30,
@@ -60,9 +64,8 @@ const WorkoutForm = () => {
         }));
 
         setAvailableExercises(exercisesData);
-        console.log(availableExercises);
       } catch (error) {
-        console.error("Error fetching exercises:", error);
+        setError(`COULD NOT FETCH EXERCISES: ${error}`)
       }
     };
 
@@ -118,33 +121,31 @@ const WorkoutForm = () => {
       setDialogVisible(false);
       setModalVisible(false);
       setCurrentOrder((prevOrder) => prevOrder + 1);
-      console.log(plan.exercises);
     }
   };
 
   const handleSave = async () => {
-
-    console.log(plan)
-
+  
     try {
       const currentUser = FIREBASE_AUTH.currentUser;
-
-      if(currentUser) {
+  
+      if (currentUser) {
         const uid = currentUser.uid;
         const userRef = doc(FIREBASE_DB, "users", uid);
-        const userDoc = await getDoc(userRef);
-    
-        if(userDoc.exists()) {
-          await updateDoc(userRef, {
-            workouts: [...userDoc.data().workouts, plan],
-          });
-          console.log("Workout saved successfully!");
-        } else {
-
+  
+        // Check user existence before adding workout
+        const userSnapshot = await getDoc(userRef);
+        if (!userSnapshot.exists()) {
+          setError("USER NOT FOUND");
+          return; // Exit the function early to prevent unnecessary operation
         }
+  
+        await addDoc(collection(userRef, "workouts"), plan);
+        router.back();
       }
     } catch (error) {
-      console.error("Error saving workout:", error);
+      // Handle other potential errors related to adding the workout plan
+      setError(`SOMETHING WENT WRONG: ${error}`); // Use error.message for more specific error details
     }
   };
 
@@ -337,6 +338,36 @@ const WorkoutForm = () => {
           </Dialog>
         </Portal>
       </ScrollView>
+      {error && (
+        <Snackbar
+        visible={error ? true : false}
+        onDismiss={() =>
+          setError("")
+        }
+        style={{
+          paddingRight: 10,
+          backgroundColor: theme.colors.errorContainer,
+        }}
+        duration={3000}
+        action={{
+          label: "DISMISS",
+          labelStyle: {
+            color: theme.colors.onBackground,
+            fontFamily: "ProtestStrike",
+          },
+        }}
+      >
+        <Text
+          variant="titleMedium"
+          style={{
+            color: theme.colors.onErrorContainer,
+            fontFamily: "ProtestStrike",
+          }}
+        >
+          {error}
+        </Text>
+      </Snackbar>
+      )}
     </View>
   );
 };

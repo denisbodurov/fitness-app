@@ -1,7 +1,7 @@
 import { MD3Theme } from "react-native-paper";
 
 export interface CustomPlanProps {
-  id: number;
+  id: string;
   title: string;
   information: number;
   difficulty: number;

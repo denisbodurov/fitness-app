@@ -6,8 +6,8 @@ import { DataBlockProps, ProgressProps } from "@/types/components/Progress";
 export default function Progress({ data, theme }: ProgressProps) {
   return (
     <View style={styles.container}>
-      <DataBlock value={data.workouts} suffix={"WORKOUTS"} theme={theme} />
-      <DataBlock value={data.minutes} suffix={"MINUTES"} theme={theme} />
+      <DataBlock value={data.workouts ? data.workouts : 0} suffix={"WORKOUTS"} theme={theme} />
+      <DataBlock value={data.minutes ? data.minutes : 0} suffix={"MINUTES"} theme={theme} />
     </View>
   );
 }

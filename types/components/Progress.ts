@@ -2,7 +2,6 @@ import { MD3Theme } from "react-native-paper";
 
 export interface ProgressData {
   workouts: number;
-  calories: number;
   minutes: number;
 }
 

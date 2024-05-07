@@ -2,7 +2,7 @@ import { TimerProps } from "@/types/components/Timer";
 import { StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 
-function Timer({ seconds } : TimerProps) {
+function Timer({ seconds, size = 20 } : TimerProps) {
   // Calculate hours, minutes, and remaining seconds
   const hours = Math.floor(seconds / 3600);
   const remainingSeconds = seconds % 3600;
@@ -14,7 +14,7 @@ function Timer({ seconds } : TimerProps) {
 
   return (
     <View style={styles.container}>
-      <Text variant="titleMedium" style={styles.digits}>{formattedTime}</Text>
+      <Text style={{...styles.digits, fontSize: size}}>{formattedTime}</Text>
     </View>
   );
 }
@@ -22,10 +22,14 @@ function Timer({ seconds } : TimerProps) {
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    width: 100,
+    alignItems: "center",
+    justifyContent: "center",
+    flexWrap: "nowrap",
+    width: 120,
   },
   digits: {
     fontFamily: "ProtestStrike",
+    
   },
 });
 

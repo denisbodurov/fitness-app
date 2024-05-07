@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "fitness-app",
-    "slug": "fitness-app",
+    "name": "Sparkfit",
+    "slug": "sparkfit",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -23,7 +23,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.abyssal.fitnessapp"
+      "package": "com.abyssal.sparkfit"
     },
     "web": {
       "bundler": "metro",
