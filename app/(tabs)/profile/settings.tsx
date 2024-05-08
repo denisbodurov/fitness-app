@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Snackbar,
   Button,
+  SegmentedButtons,
 } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import PickerDialog from "@/components/PickerDialog";
@@ -38,6 +39,7 @@ function SettingsScreen() {
     dateOfBirth: new Date(),
     weight: "",
     height: "",
+    gender: ""
   });
 
   const [settings, setSettings] = useState(initialSettings);
@@ -47,26 +49,21 @@ function SettingsScreen() {
   const [status, setStatus] = useState({
     isLoading: true,
     error: "",
+    success: "",
   });
 
-  //Fetch the data for weight, height and DOB of the current user from Firestore
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // Get the current user
         const currentUser = FIREBASE_AUTH.currentUser;
 
         if (currentUser) {
-          // Get the UID of the current user
           const uid = currentUser.uid;
 
-          // Reference to the users collection
           const usersRef = collection(FIREBASE_DB, "users");
 
-          // Query for the current user's document
           const userDoc = doc(usersRef, uid);
 
-          // Fetch the document snapshot
           const userDocSnapshot = await getDoc(userDoc);
 
           if (userDocSnapshot.exists()) {
@@ -76,8 +73,9 @@ function SettingsScreen() {
               dateOfBirth: userData.dob.toDate(),
               weight: userData.weight.toString(),
               height: userData.height.toString(),
+              gender: userData.gender,
             });
-            setSettings(initialSettings)
+            setSettings(initialSettings);
           } else {
             setStatus({ ...status, error: "RESOURCE NOT FOUND" });
           }
@@ -93,9 +91,8 @@ function SettingsScreen() {
       }
     };
 
-    // Call the function to fetch user data when component mounts
     fetchUserData();
-  }, []); // Empty dependency array ensures this effect runs only once after the component mounts
+  }, []);
 
   const showDialogue = (dialogType: string) => {
     setDialogStates((prevStates) => ({
@@ -152,18 +149,35 @@ function SettingsScreen() {
         const uid = currentUser.uid;
         const usersRef = collection(FIREBASE_DB, "users");
         const userDoc = doc(usersRef, uid);
-        const updateData = {
-          height: parseInt(initialSettings.height),
-          weight: parseInt(initialSettings.weight),
-          dob: initialSettings.dateOfBirth,
-        };
 
-        await updateDoc(userDoc, updateData);
-        console.log("Success");
+        if(userDoc) {
+          const updateData = {
+            height: parseInt(initialSettings.height),
+            weight: parseInt(initialSettings.weight),
+            gender: initialSettings.gender,
+            dob: initialSettings.dateOfBirth,
+          };
+  
+          await updateDoc(userDoc, updateData);
+          setStatus((prevStatus) => {
+            return { ...prevStatus, success: "SAVED SUCCESSFULLY" };
+          });
+        } else {
+          setStatus((prevStatus) => {
+            return { ...prevStatus, success: "USER NOT FOUND" };
+          });
+        }
+
         setHasChanged(false);
+      } else {
+        setStatus((prevStatus) => {
+          return { ...prevStatus, success: "NO AUTH SESSION FOUND" };
+        });
       }
-    } catch {
-      console.log("error");
+    } catch (error) {
+      setStatus((prevStatus) => {
+        return { ...prevStatus, error: `SOMETHING WENT WRONG: ${error}` };
+      });
     } finally {
       setStatus((prevStatus) => {
         return { ...prevStatus, isLoading: false };
@@ -181,9 +195,9 @@ function SettingsScreen() {
   );
 
   const handleSignOut = () => {
-    signOut()
-    router.navigate('/(auth)/sign-in')
-  }
+    signOut();
+    router.navigate("/(auth)/sign-in");
+  };
 
   return (
     <View
@@ -273,7 +287,7 @@ function SettingsScreen() {
               activeOpacity={0.8}
               onPress={() => showDialogue("heightDialog")}
             >
-              <Text variant="titleMedium">
+              <Text variant="titleMedium" style={styles.text}>
                 {initialSettings.height || 0} cm
               </Text>
               <Icon
@@ -304,7 +318,7 @@ function SettingsScreen() {
               activeOpacity={0.8}
               onPress={() => showDialogue("weightDialog")}
             >
-              <Text variant="titleMedium">
+              <Text variant="titleMedium" style={styles.text}>
                 {initialSettings.weight || 0} kg
               </Text>
               <Icon
@@ -335,7 +349,7 @@ function SettingsScreen() {
               activeOpacity={0.8}
               onPress={() => showDialogue("dateOfBirthDialog")}
             >
-              <Text variant="titleMedium">{formattedDate}</Text>
+              <Text variant="titleMedium" style={styles.text}>{formattedDate}</Text>
               <Icon
                 library="Entypo"
                 name="triangle-down"
@@ -344,40 +358,110 @@ function SettingsScreen() {
               />
             </TouchableOpacity>
           </View>
+          <View style={styles.listItem}>
+            <View style={styles.listItemGroup}>
+              <Icon
+                library="MaterialCommunityIcons"
+                name="gender-male-female"
+                color={theme.colors.outline}
+              />
+              <Text variant="titleMedium" style={styles.itemTitle}>
+                GENDER
+              </Text>
+            </View>
+            <SegmentedButtons
+              value={initialSettings.gender}
+              onValueChange={value => setInitialSettings({...initialSettings, gender: value})}
+              style={styles.segmentedButtons}
+              buttons={[
+                {
+                  value: 'male',
+                  label: 'Male',
+                  icon: 'gender-male',
+                  labelStyle: styles.text
+                  
+                },
+                {
+                  value: 'female',
+                  label: 'Female',
+                  icon: 'gender-female',
+                  labelStyle: styles.text
+                },
+              ]}
+            />
+          </View>
           <Button
-          style={{
-            ...styles.logoutButton,
-            backgroundColor: theme.colors.primary,
-          }}
-          mode="contained"
-          onPress={handleSignOut}
-        >
-          <Text variant="titleMedium" style={{...styles.logoutText, color: theme.colors.onPrimary}}>
-            SIGN OUT
-          </Text>{" "}
-        </Button>
+            style={{
+              ...styles.logoutButton,
+              backgroundColor: theme.colors.primary,
+            }}
+            mode="contained"
+            onPress={handleSignOut}
+          >
+            <Text
+              variant="titleMedium"
+              style={{ ...styles.text, color: theme.colors.onPrimary }}
+            >
+              SIGN OUT
+            </Text>{" "}
+          </Button>
         </View>
       )}
 
+      {/* Error Snackbar */}
       {status.error && (
         <Snackbar
           visible={status.error ? true : false}
-          onDismiss={() => setStatus( (prevStatus) => { return {...prevStatus, error: ""}})}
+          onDismiss={() =>
+            setStatus((prevStatus) => {
+              return { ...prevStatus, error: "" };
+            })
+          }
           style={{ backgroundColor: theme.colors.errorContainer }}
           duration={3000}
           action={{
             label: "DISMISS",
             labelStyle: {
               color: theme.colors.onBackground,
-              fontFamily: "ProtestStrike"
-            }
+              fontFamily: "ProtestStrike",
+            },
           }}
         >
           <Text
             variant="titleMedium"
-            style={{ color: theme.colors.onErrorContainer, fontFamily: "ProtestStrike" }}
+            style={{
+              color: theme.colors.onErrorContainer,
+              fontFamily: "ProtestStrike",
+            }}
           >
             {status.error}
+          </Text>
+        </Snackbar>
+      )}
+      {/* Success Snackbar */}
+      {status.success && (
+        <Snackbar
+          visible={status.success ? true : false}
+          onDismiss={() =>
+            setStatus((prevStatus) => {
+              return { ...prevStatus, success: "" };
+            })
+          }
+          style={{ backgroundColor: "#5cb85c" }}
+          duration={3000}
+          action={{
+            label: "DISMISS",
+            labelStyle: {
+              color: "white",
+              fontFamily: "ProtestStrike",
+            },
+          }}
+        >
+          <Text
+            variant="titleMedium"
+            style={{ color: "white", fontFamily: "ProtestStrike" }}
+          >
+            {status.success}
           </Text>
         </Snackbar>
       )}
@@ -409,7 +493,7 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   segmentedButtons: {
-    maxWidth: 200,
+    width: 200,
   },
   selectField: {
     minWidth: 100,
@@ -437,8 +521,8 @@ const styles = StyleSheet.create({
   logoutButton: {
     width: "100%",
   },
-  logoutText: {
-    fontFamily: "ProtestStrike"
+  text: {
+    fontFamily: "ProtestStrike",
   },
 });
 

@@ -1,187 +1,488 @@
-import { router, useNavigation } from "expo-router";
-import { Platform, StyleSheet, View } from "react-native";
-import { Button, IconButton, Text, useTheme } from "react-native-paper";
+import ChooseExercise from "@/components/ChooseExercise";
+import Exercise from "@/components/Exercise";
+import FunctionalHeader from "@/components/FunctionalHeader";
+import RestPicker from "@/components/RestPicker";
+import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebase-config";
+import { ExerciseState } from "@/types/states/Exercise";
+import { WorkoutPlan } from "@/types/states/Plan";
+import { router, useNavigation, usePathname } from "expo-router";
+import { addDoc, collection, doc, getDoc, getDocs, updateDoc } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
+import { View, StyleSheet, ScrollView, Platform } from "react-native";
+import { Dropdown } from "react-native-element-dropdown";
+import {
+  useTheme,
+  Text,
+  TextInput,
+  Button,
+  Portal,
+  Modal,
+  Dialog,
+  IconButton,
+  Snackbar,
+} from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Icon from "@/components/Icon";
 
-export default function addExercise() {
+const EditWorkout = () => {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
 
+  const [isFocus, setIsFocus] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const [error, setError] = useState("")
+  const path = usePathname();
+  const workoutId = path.split("/").pop()!;
+
+  const [selectedExercise, setSelectedExercise] = useState<ExerciseState>();
+  const [availableExercises, setAvailableExercises] = useState<ExerciseState[]>(
+    []
+  );
+  const [currentOrder, setCurrentOrder] = useState<number>(1);
+  const [sets, setSets] = useState("");
+  const [reps, setReps] = useState("");
+
+  const [plan, setPlan] = useState<WorkoutPlan>({
+    id: "",
+    title: "",
+    difficulty: 1,
+    setRest: 30,
+    exerciseRest: 30,
+    exercises: [],
+  });
+
+  useEffect(() => {
+    const fetchExercises = async () => {
+      try {
+        const exercisesRef = collection(FIREBASE_DB, "exercises");
+        const snapshot = await getDocs(exercisesRef);
+        const exercisesData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          name: doc.data().name,
+          description: doc.data().description,
+          imageURL: doc.data().imageURL,
+          videoURL: doc.data().videoURL,
+          target: doc.data().target,
+        }));
+
+        setAvailableExercises(exercisesData);
+      } catch (error) {
+        setError(`COULD NOT FETCH EXERCISES: ${error}`)
+      }
+    };
+
+    fetchExercises();
+  }, []);
+
+  
+
+  const handleTitleChange = (text: string) => {
+    setPlan({ ...plan, title: text });
+  };
+
+  const handleSetRepChange = (type: string, value: string | undefined) => {
+    if (value) {
+      value = value.replace(/[^0-9]/g, "");
+      type === "reps" ? setReps(value) : setSets(value);
+    } else {
+      type === "reps" ? setReps("") : setSets("");
+    }
+  };
+
+  const handleSelectExercise = (data: ExerciseState) => {
+    setDialogVisible(true);
+    setSelectedExercise(data);
+  };
+
+  const handleRemove = (order: number) => {
+    const filteredExercises = plan.exercises.filter(exercise => exercise.order !== order);
+    filteredExercises.forEach(exercise => {
+      if (exercise.order! > order) {
+        exercise.order! -= 1;
+      }
+    });
+    setCurrentOrder(prevOrder => prevOrder - 1);
+
+    setPlan({ ...plan, exercises: filteredExercises });
+  }
+
+  const addExercise = () => {
+    if (selectedExercise && sets && reps) {
+      setPlan({
+        ...plan,
+        exercises: [
+          ...plan.exercises,
+          {
+            ...selectedExercise,
+            order: currentOrder,
+            sets: parseInt(sets),
+            reps: parseInt(reps),
+          },
+        ],
+      });
+      setSets("");
+      setReps("");
+      setDialogVisible(false);
+      setModalVisible(false);
+      setCurrentOrder((prevOrder) => prevOrder + 1);
+    }
+  };
+
+  const handleSave = async () => {
+  
+    try {
+      const currentUser = FIREBASE_AUTH.currentUser;
+  
+      if (currentUser) {
+        const uid = currentUser.uid;
+        const userRef = doc(FIREBASE_DB, "users", uid);
+  
+        // Check user existence before adding workout
+        const userSnapshot = await getDoc(userRef);
+        if (!userSnapshot.exists()) {
+          setError("USER NOT FOUND");
+          return; // Exit the function early to prevent unnecessary operation
+        }
+  
+        await addDoc(collection(userRef, "workouts"), plan);
+        router.back();
+      }
+    } catch (error) {
+      // Handle other potential errors related to adding the workout plan
+      setError(`SOMETHING WENT WRONG: ${error}`); // Use error.message for more specific error details
+    }
+  };
+
+  const data = [
+    { label: "BEGINNER", value: "1" },
+    { label: "INTERMEDIATE", value: "2" },
+    { label: "ADVANCED", value: "3" },
+  ];
+
   return (
     <View
-    style={{
-      ...styles.safeArea,
-      paddingTop: insets.top,
-      paddingRight: insets.right,
-      paddingLeft: insets.left,
-      paddingBottom: Platform.OS === "android" ? insets.bottom : 0,
-    }}
-  >
-      {/* Header */}
-      <View style={{ ...styles.header, backgroundColor: theme.colors.surface }}>
-        <View style={styles.leftContainer}>
-          <IconButton
-            icon="arrow-left"
-            size={30}
-            iconColor={theme.colors.onSurface}
-            rippleColor={"rgba(125,125,125,0.2)"}
-            onPress={() => router.back()}
-          />
-        </View>
-        <View style={styles.rightContainer}>
-          <IconButton
-            icon="trash-can"
-            iconColor={theme.colors.primary}
-            size={26}
-            onPress={() => console.log("Pressed")}
-          />
-          <IconButton
-            icon="square-edit-outline"
-            iconColor={theme.colors.primary}
-            size={26}
-            onPress={() => console.log("Pressed")}
-          />
-        </View>
-      </View>
+      style={{
+        ...styles.safeArea,
+        paddingTop: insets.top,
+        paddingRight: insets.right,
+        paddingLeft: insets.left,
+        paddingBottom: Platform.OS === "android" ? insets.bottom : 0,
+      }}
+    >
+      <FunctionalHeader
+        title=""
+        onSave={handleSave}
+        onBack={() => router.back()}
+      />
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text variant="headlineSmall" style={styles.title}>
+          CREATE WORKOUT PLAN
+        </Text>
+        <TextInput
+          value={plan.title}
+          contentStyle={styles.textInput}
+          placeholder="Title"
+          underlineColor={theme.colors.primary}
+          activeUnderlineColor={theme.colors.primary}
+          maxLength={32}
+          onChangeText={(text) => handleTitleChange(text)}
+        />
 
-      <View style={styles.contentContainer}>
-        <View style={{ ...styles.difficultyBadge, backgroundColor: "aqua" }}>
+        <Dropdown
+          style={[styles.dropdown, { borderColor: theme.colors.primary }]}
+          placeholderStyle={{
+            ...styles.placeholderStyle,
+            color: theme.colors.primary,
+          }}
+          selectedTextStyle={{
+            ...styles.selectedTextStyle,
+            color: theme.colors.primary,
+          }}
+          iconStyle={styles.iconStyle}
+          data={data}
+          maxHeight={300}
+          labelField="label"
+          valueField="value"
+          containerStyle={{
+            ...styles.dropdownContainer,
+            backgroundColor: theme.colors.surface,
+          }}
+          itemTextStyle={{
+            ...styles.dropdownItem,
+            color: theme.colors.primary,
+          }}
+          placeholder={!isFocus ? "Select Difficulty" : "..."}
+          searchPlaceholder="Search..."
+          value={plan.difficulty.toString()}
+          onFocus={() => setIsFocus(true)}
+          onBlur={() => setIsFocus(false)}
+          onChange={(item) => {
+            setPlan({ ...plan, difficulty: parseInt(item.value) });
+            setIsFocus(false);
+          }}
+        />
+
+        <View style={styles.group}>
+          <Text variant="titleMedium" style={styles.subTitle}>
+            REST BETWEEN SETS
+          </Text>
+          <RestPicker
+            value={plan.exerciseRest.toString()}
+            onValueChange={(value) =>
+              setPlan({ ...plan, exerciseRest: parseInt(value.toString()) })
+            }
+            theme={theme}
+          />
+        </View>
+        <View style={styles.group}>
+          <Text variant="titleMedium" style={styles.subTitle}>
+            REST BETWEEN EXERCISES
+          </Text>
+          <RestPicker
+            value={plan.setRest.toString()}
+            onValueChange={(value) =>
+              setPlan({ ...plan, setRest: parseInt(value.toString()) })
+            }
+            theme={theme}
+          />
+        </View>
+        <Button
+          style={styles.button}
+          mode="contained"
+          onPress={() => setModalVisible(true)}
+        >
           <Text
             variant="titleMedium"
-            style={{ ...styles.difficultyText, color: "black" }}
+            style={{ ...styles.buttonText, color: theme.colors.onPrimary }}
           >
-            BEGINNER
+            ADD EXERCISE
           </Text>
-        </View>
-        <View style={styles.informationContainer}>
-          <Text variant="headlineMedium" style={styles.workoutTitle}>
-            NO NAME
-          </Text>
-          <View style={styles.informationItemContainer}>
-            <Icon
-              library="Feather"
-              name="target"
-              color={theme.colors.outline}
-              size={24}
-            />
-            <Text
-              variant="titleMedium"
-              style={{ ...styles.difficultyText, color: theme.colors.outline }}
-            >
-              BUTTOCKS, CALVES, BICEPS, FOREARMS, CALVES, BICEPS,
-            </Text>
-          </View>
-          <View style={styles.informationItemContainer}>
-            <Icon
-              library="MaterialCommunityIcons"
-              name="dumbbell"
-              color={theme.colors.outline}
-              size={24}
-            />
-            <Text
-              variant="titleMedium"
-              style={{ ...styles.difficultyText, color: theme.colors.outline }}
-            >
-              10 EXERCISES
-            </Text>
-          </View>
-          <View style={styles.informationItemContainer}>
-            <Icon
-              library="AntDesign"
-              name="clockcircle"
-              color={theme.colors.outline}
-              size={24}
-            />
-            <Text
-              variant="titleMedium"
-              style={{ ...styles.difficultyText, color: theme.colors.outline }}
-            >
-              25 MINUTES
-            </Text>
-          </View>
-        </View>
-        <Button style={{...styles.startButton, backgroundColor: theme.colors.primary}}>
-          <Text variant="titleMedium" style={{color: theme.colors.onPrimary}}>START WORKOUT</Text>
         </Button>
-      </View>
+        <View style={styles.group}>
+          {plan.exercises.map((exercise) => (
+            <Exercise
+              key={exercise.order}
+              name={exercise.name}
+              information={`${exercise.sets}x${exercise.reps}`}
+              order={exercise.order!}
+              imageURL={exercise.imageURL}
+              onRemove={(order) => handleRemove(order)}
+              theme={theme}
+            />
+          ))}
+        </View>
+
+        <Portal>
+          <Modal
+            visible={modalVisible}
+            onDismiss={() => setModalVisible(false)}
+            contentContainerStyle={{
+              ...styles.modal,
+              backgroundColor: theme.colors.background,
+            }}
+          >
+            <View
+              style={{
+                ...styles.header,
+                backgroundColor: theme.colors.surface,
+              }}
+            >
+              <IconButton
+                icon="close"
+                size={30}
+                iconColor={theme.colors.onSurface}
+                rippleColor={"rgba(125,125,125,0.2)"}
+                onPress={() => setModalVisible(false)}
+              />
+            </View>
+            <ScrollView contentContainerStyle={styles.modalScroll}>
+              {availableExercises.map((exercise) => (
+                <ChooseExercise
+                  key={exercise.id}
+                  data={exercise}
+                  name={exercise.name}
+                  onPress={(data) => handleSelectExercise(data)}
+                  theme={theme}
+                />
+              ))}
+            </ScrollView>
+          </Modal>
+        </Portal>
+        <Portal>
+          <Dialog
+            visible={dialogVisible}
+            style={{ backgroundColor: theme.colors.surface }}
+            onDismiss={() => setDialogVisible(false)}
+          >
+            <Dialog.Content>
+              <View style={styles.dialogContentContainer}>
+                <View style={styles.dialogInputContainer}>
+                  <Text variant="titleMedium">SETS: </Text>
+                  <TextInput
+                    value={sets}
+                    onChangeText={(text) => handleSetRepChange("sets", text)}
+                    maxLength={2}
+                    keyboardType="numeric"
+                  />
+                </View>
+                <View style={styles.dialogInputContainer}>
+                  <Text variant="titleMedium">REPS: </Text>
+                  <TextInput
+                    value={reps}
+                    onChangeText={(text) => handleSetRepChange("reps", text)}
+                    maxLength={2}
+                    keyboardType="numeric"
+                  />
+                </View>
+              </View>
+            </Dialog.Content>
+            <Dialog.Actions>
+              <Button onPress={addExercise}>Confirm</Button>
+            </Dialog.Actions>
+          </Dialog>
+        </Portal>
+      </ScrollView>
+      {error && (
+        <Snackbar
+        visible={error ? true : false}
+        onDismiss={() =>
+          setError("")
+        }
+        style={{
+          paddingRight: 10,
+          backgroundColor: theme.colors.errorContainer,
+        }}
+        duration={3000}
+        action={{
+          label: "DISMISS",
+          labelStyle: {
+            color: theme.colors.onBackground,
+            fontFamily: "ProtestStrike",
+          },
+        }}
+      >
+        <Text
+          variant="titleMedium"
+          style={{
+            color: theme.colors.onErrorContainer,
+            fontFamily: "ProtestStrike",
+          }}
+        >
+          {error}
+        </Text>
+      </Snackbar>
+      )}
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  contentContainer: {
-    flex: 1,
-    flexDirection: "column",
+  modal: {
     justifyContent: "flex-start",
-    alignItems: "flex-start",
-    paddingHorizontal: 10,
-    paddingVertical: 20,
-    gap: 25,
+    flex: 1,
+    height: "100%",
+  },
+  modalScroll: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    gap: 10,
+    flexWrap: "wrap",
+    padding: 20,
   },
   header: {
-    width: "100%",
-    height: 60,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    elevation: 2,
-  },
-  headerTitle: {
-    fontFamily: "ProtestStrike",
-  },
-  leftContainer: {
-    flex: 1,
-  },
-  rightContainer: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    alignItems: "center",
-  },
-  buttonTitle: {
-    fontFamily: "ProtestStrike",
-    flexDirection: "column",
-    justifyContent: "center",
-    padding: 0,
-    alignItems: "center",
-    fontSize: 18,
-  },
-  difficultyBadge: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    maxWidth: 150,
-    paddingVertical: 5,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-  },
-  difficultyText: {
-    fontFamily: "ProtestStrike",
-  },
-  informationContainer: {
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "flex-start",
-    gap: 10,
-  },
-  workoutTitle: {
-    fontFamily: "ProtestStrike",
-  },
-  informationItemContainer: {
+    display: "flex",
     flexDirection: "row",
     justifyContent: "flex-start",
-    alignItems: "flex-start",
+    height: 60,
+    padding: 10,
+  },
+  dialogContentContainer: {
+    flexDirection: "row",
     gap: 10,
   },
-  startButton: {
-    width: "100%",
-    paddingVertical: 5,
+  dialogInputContainer: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  title: {
+    fontFamily: "ProtestStrike",
+  },
+  subTitle: {
+    fontFamily: "ProtestStrike",
+  },
+  container: {
+    flexDirection: "column",
+    gap: 30,
+    padding: 20,
+  },
+  group: {
+    flexDirection: "column",
+    gap: 10,
+  },
+  formContainer: {
+    flexDirection: "column",
+    gap: 30,
+  },
+  textInput: {
+    fontFamily: "ProtestStrike",
+    fontSize: 20,
+  },
+  dropdown: {
+    height: 50,
+    borderWidth: 2,
     borderRadius: 10,
-  }
+    paddingHorizontal: 20,
+  },
+  dropdownContainer: {
+    borderRadius: 10,
+    borderWidth: 0,
+    elevation: 3,
+  },
+  dropdownItem: {
+    fontSize: 18,
+    fontFamily: "ProtestStrike",
+  },
+  button: {
+    width: "100%",
+    borderRadius: 10,
+  },
+  buttonText: {
+    fontFamily: "ProtestStrike",
+  },
+  icon: {
+    marginRight: 5,
+  },
+  placeholderStyle: {
+    fontSize: 20,
+    fontFamily: "ProtestStrike",
+  },
+  selectedTextStyle: {
+    fontSize: 20,
+    fontFamily: "ProtestStrike",
+  },
+  iconStyle: {
+    width: 20,
+    height: 20,
+  },
+  inputSearchStyle: {
+    height: 40,
+    fontSize: 16,
+    borderRadius: 10,
+  },
+  segmentedButtons: {
+    width: 30,
+    borderWidth: 2,
+  },
+  segmentedButtonsLabel: {
+    fontFamily: "ProtestStrike",
+    fontSize: 16,
+  },
 });
+
+export default EditWorkout;
