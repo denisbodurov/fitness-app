@@ -2,11 +2,14 @@ import ChooseExercise from "@/components/ChooseExercise";
 import Exercise from "@/components/Exercise";
 import FunctionalHeader from "@/components/FunctionalHeader";
 import RestPicker from "@/components/RestPicker";
+import SetRepDialog from "@/components/SetRepDialog";
+import UnsavedChangesDialog from "@/components/UnsavedChangesDialog";
 import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebase-config";
 import { ExerciseState } from "@/types/states/Exercise";
 import { WorkoutPlan } from "@/types/states/Plan";
+import { isLoading } from "expo-font";
 import { router, useNavigation, usePathname } from "expo-router";
-import { addDoc, collection, doc, getDoc, getDocs, updateDoc } from "firebase/firestore";
+import { addDoc, collection, doc, getDoc, getDocs, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet, ScrollView, Platform } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
@@ -30,7 +33,11 @@ const EditWorkout = () => {
   const [isFocus, setIsFocus] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
-  const [error, setError] = useState("")
+  const [unsavedChangesDialog, setUnsavedChangesDialog] = useState(false);
+  const [status, setStatus] = useState({
+    isLoading: true,
+    error: ""
+  })
   const path = usePathname();
   const workoutId = path.split("/").pop()!;
 
@@ -43,7 +50,6 @@ const EditWorkout = () => {
   const [reps, setReps] = useState("");
 
   const [plan, setPlan] = useState<WorkoutPlan>({
-    id: "",
     title: "",
     difficulty: 1,
     setRest: 30,
@@ -52,6 +58,61 @@ const EditWorkout = () => {
   });
 
   useEffect(() => {
+
+    const fetchUserWorkout = async () => {
+      try {
+        const currentUser = FIREBASE_AUTH.currentUser;
+
+        if (currentUser) {
+          const uid = currentUser.uid;
+          const userRef = doc(FIREBASE_DB, "users", uid);
+          const workoutRef = doc(userRef, "workouts", workoutId);
+
+          const unsubscribe = onSnapshot(workoutRef, (docSnapshot) => {
+            if (docSnapshot.exists()) {
+              const workoutData = docSnapshot.data();
+
+              if (workoutData) {
+
+                const selectedWorkout = {
+                  title: workoutData.title,
+                  difficulty: workoutData.difficulty,
+                  setRest: workoutData.setRest,
+                  exerciseRest: workoutData.exerciseRest,
+                  exercises: workoutData.exercises,
+                };
+
+                setPlan(selectedWorkout)
+              } else {
+                setStatus({
+                  ...status,
+                  error: `WORKOUT WITH ID ${workoutId} NOT FOUND`,
+                });
+              }
+              // Use the updated workouts data here
+            } else {
+              setStatus((prevStatus) => {
+                return { ...prevStatus, error: `USER DOCUMENT NOT FOUND` };
+              });
+            }
+          });
+          return () => unsubscribe(); // Unsubscribe when component unmounts
+        } else {
+          setStatus((prevStatus) => {
+            return { ...prevStatus, error: `NO AUTH SESSION FOUND` };
+          });
+        }
+      } catch (error) {
+        setStatus((prevStatus) => {
+          return { ...prevStatus, error: `ERROR FETCHING WORKOUT: ${error}` };
+        });
+      } finally {
+        setStatus((prevStatus) => {
+          return { ...prevStatus, isLoading: false };
+        });
+      }
+    };
+
     const fetchExercises = async () => {
       try {
         const exercisesRef = collection(FIREBASE_DB, "exercises");
@@ -67,10 +128,13 @@ const EditWorkout = () => {
 
         setAvailableExercises(exercisesData);
       } catch (error) {
-        setError(`COULD NOT FETCH EXERCISES: ${error}`)
+        setStatus((prevStatus) => {
+          return { ...prevStatus, error: `COULD NOT FETCH EXERCISES: ${error}`};
+        });
       }
     };
 
+    fetchUserWorkout();
     fetchExercises();
   }, []);
 
@@ -129,7 +193,6 @@ const EditWorkout = () => {
   };
 
   const handleSave = async () => {
-  
     try {
       const currentUser = FIREBASE_AUTH.currentUser;
   
@@ -137,19 +200,32 @@ const EditWorkout = () => {
         const uid = currentUser.uid;
         const userRef = doc(FIREBASE_DB, "users", uid);
   
-        // Check user existence before adding workout
+        // Check user existence before updating workout
         const userSnapshot = await getDoc(userRef);
         if (!userSnapshot.exists()) {
-          setError("USER NOT FOUND");
-          return; // Exit the function early to prevent unnecessary operation
+          setStatus((prevStatus) => {
+            return { ...prevStatus, error: `USER NOT FOUND` };
+          });
+          return;
         }
   
-        await addDoc(collection(userRef, "workouts"), plan);
+        if (!workoutId) {
+          setStatus((prevStatus) => {
+            return { ...prevStatus, error: `WORKOUT ID MISSING` };
+          });
+          return;
+        }
+  
+        const workoutRef = doc(userRef, "workouts", workoutId);
+  
+        await setDoc(workoutRef, plan);
+  
         router.back();
       }
     } catch (error) {
-      // Handle other potential errors related to adding the workout plan
-      setError(`SOMETHING WENT WRONG: ${error}`); // Use error.message for more specific error details
+      setStatus((prevStatus) => {
+        return { ...prevStatus, error: `COULD NOT UPDATE WORKOUT: ${error}` };
+      });
     }
   };
 
@@ -172,8 +248,16 @@ const EditWorkout = () => {
       <FunctionalHeader
         title=""
         onSave={handleSave}
-        onBack={() => router.back()}
+        onBack={() => setUnsavedChangesDialog(true)}
       />
+      
+      <UnsavedChangesDialog
+        visible={unsavedChangesDialog}
+        onStay={() => setUnsavedChangesDialog(false)}
+        onDismiss={() => router.back()}
+        theme={theme}
+      />
+      
       <ScrollView contentContainerStyle={styles.container}>
         <Text variant="headlineSmall" style={styles.title}>
           CREATE WORKOUT PLAN
@@ -308,45 +392,23 @@ const EditWorkout = () => {
             </ScrollView>
           </Modal>
         </Portal>
-        <Portal>
-          <Dialog
-            visible={dialogVisible}
-            style={{ backgroundColor: theme.colors.surface }}
-            onDismiss={() => setDialogVisible(false)}
-          >
-            <Dialog.Content>
-              <View style={styles.dialogContentContainer}>
-                <View style={styles.dialogInputContainer}>
-                  <Text variant="titleMedium">SETS: </Text>
-                  <TextInput
-                    value={sets}
-                    onChangeText={(text) => handleSetRepChange("sets", text)}
-                    maxLength={2}
-                    keyboardType="numeric"
-                  />
-                </View>
-                <View style={styles.dialogInputContainer}>
-                  <Text variant="titleMedium">REPS: </Text>
-                  <TextInput
-                    value={reps}
-                    onChangeText={(text) => handleSetRepChange("reps", text)}
-                    maxLength={2}
-                    keyboardType="numeric"
-                  />
-                </View>
-              </View>
-            </Dialog.Content>
-            <Dialog.Actions>
-              <Button onPress={addExercise}>Confirm</Button>
-            </Dialog.Actions>
-          </Dialog>
-        </Portal>
+        <SetRepDialog
+          visible={dialogVisible}
+          sets={sets}
+          reps={reps}
+          onCancel={() => setDialogVisible(false)}
+          onChange={handleSetRepChange}
+          onConfirm={addExercise}
+          theme={theme}
+        />
       </ScrollView>
-      {error && (
+      {status.error && (
         <Snackbar
-        visible={error ? true : false}
+        visible={status.error ? true : false}
         onDismiss={() =>
-          setError("")
+          setStatus((prevStatus) => {
+            return { ...prevStatus, error: ""};
+          })
         }
         style={{
           paddingRight: 10,
@@ -368,7 +430,7 @@ const EditWorkout = () => {
             fontFamily: "ProtestStrike",
           }}
         >
-          {error}
+          {status.error}
         </Text>
       </Snackbar>
       )}

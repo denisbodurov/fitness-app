@@ -16,7 +16,7 @@ export default function Workout({
 }: WorkoutProps) {
 
   return (
-    <Link asChild href={`/(tabs)/workouts/${4}`}>
+    <Link asChild href={`/(tabs)/home/default-workouts/${id}`}>
       <TouchableOpacity style={{...style.container, height: containerHeight}} activeOpacity={0.8}>
         <View style={style.difficultyContainer}>
           <Icon

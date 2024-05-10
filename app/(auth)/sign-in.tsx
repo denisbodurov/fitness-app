@@ -77,24 +77,16 @@ export default function SignInScreen() {
         paddingTop: insets.top,
         paddingLeft: insets.left,
         paddingRight: insets.right,
-        paddingBottom: Platform.OS === "android" ? insets.bottom : 0,
+        paddingBottom: insets.bottom
       }}
     >
+    <View style={styles.mainContainer}>
       <Image
         style={styles.backgroundImage}
         source={require("@/assets/images/auth-background.jpg")}
       />
       <View style={styles.backgroundDim} />
-      <KeyboardAvoidingView
-        style={{
-          ...styles.keyboardAvoidingContainer,
-          paddingTop: insets.top,
-          paddingLeft: insets.left,
-          paddingRight: insets.right,
-          paddingBottom: Platform.OS === "android" ? insets.bottom : 0,
-        }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
+      <KeyboardAvoidingView style={styles.keyboardAvoidingContainer}>
         <ScrollView contentContainerStyle={styles.container}>
           <View style={styles.formGroup}>
             <Text
@@ -201,9 +193,9 @@ export default function SignInScreen() {
             >
               {status.isLoading ? (
                 <ActivityIndicator
-                  size="small"
-                  color={theme.colors.onPrimary}
-                />
+                size="small"
+                color={theme.colors.onPrimary}
+              />
               ) : (
                 <Text
                   variant="titleMedium"
@@ -232,6 +224,7 @@ export default function SignInScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
     </View>
+    </View>
   );
 }
 
@@ -239,23 +232,26 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
+  mainContainer: {
+    flex: 1,
+  },
   backgroundImage: {
+    position: "absolute",
+    top: 0,
+    left: 0,
     width: "100%",
     height: "100%",
   },
   backgroundDim: {
     position: "absolute",
-    left: 0,
     top: 0,
-    width: 2000,
-    height: 2000,
+    left: 0,
+    width: "100%",
+    height: "100%",
     backgroundColor: "rgba(0, 0, 0, 0.8)",
   },
   keyboardAvoidingContainer: {
     flex: 1,
-    position: "absolute",
-    width: "100%",
-    height: "100%",
   },
   container: {
     flex: 1,
@@ -287,11 +283,11 @@ const styles = StyleSheet.create({
     fontFamily: "ProtestStrike",
   },
   button: {
+    position: "absolute",
     width: "100%",
     elevation: 3,
-    height: 50,
-    padding: 0,
     borderRadius: 10,
+    marginBottom: 10,
   },
   buttonTitle: {
     width: "100%",
@@ -299,15 +295,22 @@ const styles = StyleSheet.create({
     fontFamily: "ProtestStrike",
   },
   signinGroup: {
+    width: "100%",
+    position: "absolute",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    bottom: 0,
   },
   actionGroup: {
+    position: "relative",
     width: "100%",
     flexDirection: "column",
-    gap: 5,
-    padding: 20,
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 10,
+    height: 85,
+    padding: 40,
   },
   errorContainer: {
     width: "100%",

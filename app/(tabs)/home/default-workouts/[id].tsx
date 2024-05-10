@@ -28,7 +28,7 @@ import { exerciseGifs } from "@/constants/images";
 import { Image } from "expo-image";
 import PromptDialog from "@/components/PromptDialog";
 
-export default function WorkoutScreen() {
+export default function DefaultWorkoutScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const path = usePathname();
@@ -41,7 +41,6 @@ export default function WorkoutScreen() {
   });
   const [workout, setWorkout] = useState<WorkoutPlan | undefined>();
   const [modalVisible, setModalVisible] = useState(false);
-  const [dialogVisible, setDialogVisible] = useState(false);
   const [quitDialog, setQuitDialog] = useState(false);
 
   //Workout flow related states
@@ -73,14 +72,12 @@ export default function WorkoutScreen() {
   }, [isWorkoutStarted, rest]);
 
   useEffect(() => {
-    const fetchUserWorkout = async () => {
+    const fetchDefaultWorkout = async () => {
       try {
         const currentUser = FIREBASE_AUTH.currentUser;
 
         if (currentUser) {
-          const uid = currentUser.uid;
-          const userRef = doc(FIREBASE_DB, "users", uid);
-          const workoutRef = doc(userRef, "workouts", workoutId);
+          const workoutRef = doc(FIREBASE_DB, "defaultWorkouts", workoutId);
 
           const unsubscribe = onSnapshot(workoutRef, (docSnapshot) => {
             if (docSnapshot.exists()) {
@@ -112,13 +109,14 @@ export default function WorkoutScreen() {
                   error: `WORKOUT WITH ID ${workoutId} NOT FOUND`,
                 });
               }
+              // Use the updated workouts data here
             } else {
               setStatus((prevStatus) => {
                 return { ...prevStatus, error: `USER DOCUMENT NOT FOUND` };
               });
             }
           });
-          return () => unsubscribe();
+          return () => unsubscribe(); // Unsubscribe when component unmounts
         } else {
           setStatus((prevStatus) => {
             return { ...prevStatus, error: `NO AUTH SESSION FOUND` };
@@ -135,8 +133,8 @@ export default function WorkoutScreen() {
       }
     };
 
-    fetchUserWorkout();
-  }, [workoutId]);
+    fetchDefaultWorkout();
+  }, [workoutId]); // Re-run effect when the slug changes
 
   const getTargetMuscles = () => {
     if (workout) {
@@ -278,32 +276,8 @@ export default function WorkoutScreen() {
             onPress={() => router.back()}
           />
         </View>
-        <View style={styles.rightContainer}>
-          <IconButton
-            icon="trash-can"
-            iconColor={theme.colors.primary}
-            size={26}
-            onPress={() => {
-              setDialogVisible(true);
-            }}
-          />
-          <IconButton
-            icon="square-edit-outline"
-            iconColor={theme.colors.primary}
-            size={26}
-            onPress={() => router.replace(`/(tabs)/workouts/edit-workout/${workoutId}`)}
-          />
-        </View>
       </View>
-
-      <PromptDialog
-        visible={dialogVisible}
-        title="Are you sure you want to delete this workout plan?"
-        content="You cannot undo this acion!"
-        onCancel={() => setDialogVisible(false)}
-        onConfirm={handleDelete}
-        theme={theme}
-      />
+      
 
       <View style={styles.contentContainer}>
         <View style={styles.informationContainer}>
@@ -388,7 +362,7 @@ export default function WorkoutScreen() {
                     <Button
                       mode="contained"
                       style={styles.modalButton}
-                      onPress={() => router.navigate("/(tabs)/workouts")}
+                      onPress={() => router.navigate("/(tabs)/home")}
                     >
                       <Text
                         variant="titleMedium"
@@ -418,12 +392,13 @@ export default function WorkoutScreen() {
                       />
                       <Timer seconds={seconds} />
                     </View>
+
                     <PromptDialog
                       visible={quitDialog}
                       title="Are you sure you want to quit?"
                       content="Your progress won't be saved!"
                       onCancel={() => setQuitDialog(false)}
-                      onConfirm={() => router.navigate("(tabs)/workouts")}
+                      onConfirm={() => router.navigate("(tabs)/home")}
                       theme={theme}
                     />
 

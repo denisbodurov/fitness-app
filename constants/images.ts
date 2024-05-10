@@ -17,6 +17,8 @@ export const exerciseImages = {
   pullups: require("@/assets/images/exercise_images/pullups.png"),
   pushups: require("@/assets/images/exercise_images/pushups.png"),
   situps: require("@/assets/images/exercise_images/situps.png"),
+  crunches: require("@/assets/images/exercise_images/crunches.png"),
+  lunges: require("@/assets/images/exercise_images/lunges.png"),
 };
 
 export const exerciseGifs = {
@@ -26,4 +28,6 @@ export const exerciseGifs = {
   pullups: require("@/assets/images/exercise_gifs/pullups.gif"),
   pushups: require("@/assets/images/exercise_gifs/pushups.gif"),
   situps: require("@/assets/images/exercise_gifs/situps.gif"),
+  crunches: require("@/assets/images/exercise_gifs/crunches.gif"),
+  lunges: require("@/assets/images/exercise_gifs/lunges.gif"),
 };

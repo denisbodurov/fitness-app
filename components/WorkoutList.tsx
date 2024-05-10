@@ -7,15 +7,15 @@ import { defaultWorkoutImages } from "@/constants/images";
 export default function WorkoutList({data, theme} : WorkoutListProps) {
 
   const workouts = data.map((workout) => {
-    const URL = defaultWorkoutImages[workout.url.split('.')[0] as keyof typeof defaultWorkoutImages];    
+    const URL = defaultWorkoutImages[workout.bannerURL.split('.')[0] as keyof typeof defaultWorkoutImages];    
 
     return (
       <Workout
         key={workout.id}
-        id={workout.id}
+        id={workout.id!}
         bannerURL={URL}
         title={workout.title}
-        information={workout.information}
+        information={workout.exercises.length + " EXERCISES"}
         difficulty={workout.difficulty}
         theme={theme}
       />

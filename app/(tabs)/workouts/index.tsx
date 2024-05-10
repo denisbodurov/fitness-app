@@ -146,7 +146,7 @@ export default function WorkoutsScreen() {
           return (
             <CustomPlan
               key={index}
-              id={workout.id}
+              id={workout.id!}
               title={workout.title}
               information={workout.exercises.length}
               difficulty={workout.difficulty}

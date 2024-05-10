@@ -10,30 +10,28 @@ export default function Feed() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const [quotes, setQuotes] = useState<Quote[] | undefined>();
-  const [currentQuote, setCurrentQuote] = useState<number>();
+  const [currentQuote, setCurrentQuote] = useState<number>(0);
   const [status, setStatus] = useState({
     isLoading: true,
     error: "",
   });
 
   const handleRandom = () => {
-
     if (!quotes || quotes.length === 0) {
       return;
     }
-  
+
     let randomIndex;
     do {
       randomIndex = Math.floor(Math.random() * quotes.length);
     } while (randomIndex === currentQuote);
-  
+
     setCurrentQuote(randomIndex);
   };
 
   useEffect(() => {
     const fetchMotivationData = async () => {
       try {
-
         const motivationRef = collection(FIREBASE_DB, "motivation");
 
         const motivationSnapshot = await getDocs(motivationRef);
@@ -43,12 +41,11 @@ export default function Feed() {
             (doc) => doc.data() as Quote
           );
 
-          if(motivationData) {
+          if (motivationData) {
             setQuotes(motivationData);
           } else {
             setStatus({ ...status, error: `FAILED TO FETCH QUOTES` });
           }
-
         } else {
           setStatus({ ...status, error: `FAILED TO FETCH QUOTES` });
         }
@@ -66,25 +63,27 @@ export default function Feed() {
 
   useEffect(() => {
     handleRandom();
-  }, [quotes])
+  }, [quotes]);
 
+  const renderContent = () => {
+    if (status.isLoading) {
+      return (
+        <View style={styles.statusContainer}>
+          <ActivityIndicator animating={true} size="large" />
+        </View>
+      );
+    }
 
+    if (status.error) {
+      return (
+        <View style={styles.statusContainer}>
+          <Text variant="headlineLarge">SOMETHING WENT WRONG</Text>
+        </View>
+      );
+    }
 
-  return (
-    <View
-      style={{
-        ...styles.safeArea,
-        paddingTop: insets.top,
-        paddingRight: insets.right,
-        paddingLeft: insets.left,
-        paddingBottom: Platform.OS === "android" ? insets.bottom : 0,
-      }}
-    >
-      {status.isLoading ? (
-        <ActivityIndicator/>
-      ) : (status.error) ? (
-        <Text variant="headlineMedium">{status.error}</Text>
-      ) : (
+    if (quotes && quotes[currentQuote]) {
+      return (
         <>
           <ScrollView contentContainerStyle={styles.scroll}>
             <View style={styles.motivationContainer}>
@@ -96,13 +95,18 @@ export default function Feed() {
                   borderColor: theme.colors.primary,
                 }}
               >
-              {(quotes && currentQuote !== undefined) && quotes[currentQuote].quote}
+                {quotes &&
+                  currentQuote !== undefined &&
+                  quotes[currentQuote].quote}
               </Text>
               <Text
                 variant="titleMedium"
                 style={{ ...styles.text, ...styles.author }}
               >
-                ~ {(quotes && currentQuote !== undefined) && quotes[currentQuote].author}
+                ~{" "}
+                {quotes &&
+                  currentQuote !== undefined &&
+                  quotes[currentQuote].author}
               </Text>
             </View>
           </ScrollView>
@@ -123,7 +127,21 @@ export default function Feed() {
             </Button>
           </View>
         </>
-      )}
+      );
+    }
+  };
+
+  return (
+    <View
+      style={{
+        ...styles.safeArea,
+        paddingTop: insets.top,
+        paddingRight: insets.right,
+        paddingLeft: insets.left,
+        paddingBottom: Platform.OS === "android" ? insets.bottom : 0,
+      }}
+    >
+      {renderContent()}
     </View>
   );
 }
@@ -161,6 +179,11 @@ const styles = StyleSheet.create({
   motivationContainer: {
     flex: 1,
     padding: 20,
+    flexDirection: "column",
+    justifyContent: "center",
+  },
+  statusContainer: {
+    flex: 1,
     flexDirection: "column",
     justifyContent: "center",
   },

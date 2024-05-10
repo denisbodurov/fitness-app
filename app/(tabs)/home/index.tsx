@@ -1,7 +1,7 @@
 import Icon from "@/components/Icon";
 import { useEffect, useState } from "react";
 import { Platform, StyleSheet, View } from "react-native";
-import { ActivityIndicator, Text, useTheme } from "react-native-paper";
+import { ActivityIndicator, Text, Button, useTheme } from "react-native-paper";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import WorkoutList from "@/components/WorkoutList";
@@ -9,15 +9,16 @@ import Schedule from "@/components/Schedule";
 import { ScheduleData } from "@/types/components/Schedule";
 import defaultSchedule from "@/constants/defaultSchedule";
 import Progress from "@/components/Progress";
-import { WorkoutData } from "@/types/components/Workout";
-import { doc, getDoc, onSnapshot } from "firebase/firestore";
+import { DefaultWorkoutPlan } from "@/types/components/Workout";
+import { collection, disableNetwork, doc, getDocs, onSnapshot, query } from "firebase/firestore";
 import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebase-config";
 import { Activity } from "@/types/states/Activity";
 import { ProgressData } from "@/types/components/Progress";
+import { WorkoutPlan } from "@/types/states/Plan";
 
 export default function HomeScreen() {
   const [schedule, setSchedule] = useState<ScheduleData>(defaultSchedule);
-  const [defaultWorkouts, setDefaultWorkouts] = useState("");
+  const [defaultWorkouts, setDefaultWorkouts] = useState<DefaultWorkoutPlan[]>();
   const [dailyProgress, setDailyProgress] = useState<ProgressData | undefined>();
 
   const [status, setStatus] = useState({
@@ -95,44 +96,46 @@ export default function HomeScreen() {
       }
     };
 
+    const fetchWorkouts = async () => {
+      try {
+
+        const workoutsRef = collection(FIREBASE_DB, 'defaultWorkouts');
+        const workoutsQuery = query(workoutsRef);
+        const workoutSnapshot = await getDocs(workoutsQuery);
+  
+        const fetchedWorkouts = workoutSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          title: doc.data().title,
+          setRest: doc.data().setRest,
+          exerciseRest: doc.data().exerciseRest,
+          difficulty: doc.data().difficulty,
+          exercises: doc.data().exercises,
+          bannerURL: doc.data().bannerURL
+        }));
+        
+        setDefaultWorkouts(fetchedWorkouts);
+      } catch (error) {
+        setStatus({ ...status, error: `SOMETHING WENT WRONG: ${error}` });
+      } finally {
+        setStatus((prevStatus) => {
+          return { ...prevStatus, isLoading: false };
+        });
+      }
+    };
+
     fetchUserSchedule();
+    fetchWorkouts();
   }, []); // Empty dependency array ensures useEffect runs only once
 
-  const mockData: WorkoutData[] = [
-    {
-      url: "arms-beginner.jpg",
-      title: "ARMS WORKOUT",
-      information: "3 EXERCISES",
-      difficulty: 1,
-      id: 1,
-    },
-    {
-      url: "legs-beginner.jpg",
-      title: "LEGS WORKOUT",
-      information: "3 EXERCISES",
-      difficulty: 1,
-      id: 4,
-    },
-    {
-      url: "legs-beginner.jpg",
-      title: "LEGS WORKOUT",
-      information: "6 EXERCISES",
-      difficulty: 2,
-      id: 2,
-    },
-    {
-      url: "abs-beginner.jpg",
-      title: "ABS WORKOUT",
-      information: "12 EXERCISES",
-      difficulty: 3,
-      id: 3,
-    },
-  ];
+
+  const beginner = defaultWorkouts?.filter(workout => workout.difficulty === 1)
+  const intermediate = defaultWorkouts?.filter(workout => workout.difficulty === 2)
+  const advanced = defaultWorkouts?.filter(workout => workout.difficulty === 3)
 
   const renderContent = () => {
     if (status.isLoading) {
       return (
-        <View style={style.statusContainer}>
+        <View style={styles.statusContainer}>
           <ActivityIndicator animating={true} size="large" />
         </View>
       );
@@ -140,38 +143,38 @@ export default function HomeScreen() {
 
     if (status.error) {
       return (
-        <View style={style.statusContainer}>
-          <Text variant="headlineLarge">SOMETHING WENT WRONG</Text>
+        <View style={styles.statusContainer}>
+          <Text variant="headlineLarge">{status.error}</Text>
         </View>
       );
     }
 
-    if (schedule && dailyProgress) {
+    if (schedule && dailyProgress && beginner && intermediate && advanced) {
       return (
         <ScrollView
           contentContainerStyle={{
-            ...style.body,
+            ...styles.body,
 
             backgroundColor: theme.colors.background,
           }}
           showsVerticalScrollIndicator={false}
         >
           {/* Data container providing information about the user's daily progress */}
-          <View style={style.section}>
-            <View style={style.sectionTitleContainer}>
+          <View style={styles.section}>
+            <View style={styles.sectionTitleContainer}>
               <Icon
                 library="MaterialCommunityIcons"
                 name="progress-check"
                 color={theme.colors.primary}
               />
-              <Text style={style.sectionTitle} variant="headlineSmall">
+              <Text style={styles.sectionTitle} variant="headlineSmall">
                 DAILY PROGRESS
               </Text>
             </View>
 
             <View
               style={{
-                ...style.progressContainer,
+                ...styles.progressContainer,
                 backgroundColor: theme.colors.surface,
               }}
             >
@@ -179,41 +182,43 @@ export default function HomeScreen() {
             </View>
           </View>
           {/* Data container that provides info about the user's weekly workout schedule */}
-          <View style={style.section}>
-            <View style={style.sectionTitleContainer}>
+          <View style={styles.section}>
+            <View style={styles.sectionTitleContainer}>
               <Icon
                 library="FontAwesome"
                 name="calendar"
                 color={theme.colors.primary}
               />
-              <Text style={style.sectionTitle} variant="headlineSmall">
+              <Text style={styles.sectionTitle} variant="headlineSmall">
                 SCHEDULE
               </Text>
             </View>
             <Schedule scheduleData={schedule} theme={theme} />
           </View>
           {/* Three separate sections with workouts of 3 different difficulty levels */}
-          <View style={style.section}>
-            <View style={style.sectionTitleContainer}>
-              <Text style={style.sectionTitle} variant="headlineSmall">
+          <View style={styles.section}>
+            <View style={styles.sectionTitleContainer}>
+              <Text style={styles.sectionTitle} variant="headlineSmall">
                 BEGINNER
               </Text>
             </View>
-            <WorkoutList data={mockData} theme={theme} />
+            <WorkoutList data={beginner} theme={theme} />
           </View>
-          <View style={style.section}>
-            <View style={style.sectionTitleContainer}>
-              <Text style={style.sectionTitle} variant="headlineSmall">
+          <View style={styles.section}>
+            <View style={styles.sectionTitleContainer}>
+              <Text style={styles.sectionTitle} variant="headlineSmall">
                 INTERMEDIATE
               </Text>
             </View>
+            <WorkoutList data={intermediate} theme={theme} />
           </View>
-          <View style={style.section}>
-            <View style={style.sectionTitleContainer}>
-              <Text style={style.sectionTitle} variant="headlineSmall">
+          <View style={styles.section}>
+            <View style={styles.sectionTitleContainer}>
+              <Text style={styles.sectionTitle} variant="headlineSmall">
                 ADVANCED
               </Text>
             </View>
+            <WorkoutList data={advanced} theme={theme} />
           </View>
         </ScrollView>
       );
@@ -223,7 +228,7 @@ export default function HomeScreen() {
   return (
     <View
       style={{
-        ...style.safeArea,
+        ...styles.safeArea,
         paddingTop: insets.top,
         paddingRight: insets.right,
         paddingLeft: insets.left,
@@ -235,7 +240,7 @@ export default function HomeScreen() {
   );
 }
 
-const style = StyleSheet.create({
+const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },

@@ -32,7 +32,7 @@ function WorkoutsLayout() {
         }}
       />
       <Stack.Screen
-        name="edit-workout"
+        name="edit-workout/[id]"
         options={{
           headerShown: false,
           contentStyle: { backgroundColor: theme.colors.background },

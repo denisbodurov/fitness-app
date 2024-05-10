@@ -2,11 +2,20 @@ import ChooseExercise from "@/components/ChooseExercise";
 import Exercise from "@/components/Exercise";
 import FunctionalHeader from "@/components/FunctionalHeader";
 import RestPicker from "@/components/RestPicker";
+import SetRepDialog from "@/components/SetRepDialog";
+import UnsavedChangesDialog from "@/components/UnsavedChangesDialog";
 import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebase-config";
 import { ExerciseState } from "@/types/states/Exercise";
 import { WorkoutPlan } from "@/types/states/Plan";
 import { router, useNavigation } from "expo-router";
-import { addDoc, collection, doc, getDoc, getDocs, updateDoc } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  updateDoc,
+} from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet, ScrollView, Platform } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
@@ -30,7 +39,8 @@ const WorkoutForm = () => {
   const [isFocus, setIsFocus] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
-  const [error, setError] = useState("")
+  const [unsavedChangesDialog, setUnsavedChangesDialog] = useState(false);
+  const [error, setError] = useState("");
 
   const [selectedExercise, setSelectedExercise] = useState<ExerciseState>();
   const [availableExercises, setAvailableExercises] = useState<ExerciseState[]>(
@@ -41,7 +51,6 @@ const WorkoutForm = () => {
   const [reps, setReps] = useState("");
 
   const [plan, setPlan] = useState<WorkoutPlan>({
-    id: "",
     title: "",
     difficulty: 1,
     setRest: 30,
@@ -65,7 +74,7 @@ const WorkoutForm = () => {
 
         setAvailableExercises(exercisesData);
       } catch (error) {
-        setError(`COULD NOT FETCH EXERCISES: ${error}`)
+        setError(`COULD NOT FETCH EXERCISES: ${error}`);
       }
     };
 
@@ -91,16 +100,18 @@ const WorkoutForm = () => {
   };
 
   const handleRemove = (order: number) => {
-    const filteredExercises = plan.exercises.filter(exercise => exercise.order !== order);
-    filteredExercises.forEach(exercise => {
+    const filteredExercises = plan.exercises.filter(
+      (exercise) => exercise.order !== order
+    );
+    filteredExercises.forEach((exercise) => {
       if (exercise.order! > order) {
         exercise.order! -= 1;
       }
     });
-    setCurrentOrder(prevOrder => prevOrder - 1);
+    setCurrentOrder((prevOrder) => prevOrder - 1);
 
     setPlan({ ...plan, exercises: filteredExercises });
-  }
+  };
 
   const addExercise = () => {
     if (selectedExercise && sets && reps) {
@@ -125,21 +136,20 @@ const WorkoutForm = () => {
   };
 
   const handleSave = async () => {
-  
     try {
       const currentUser = FIREBASE_AUTH.currentUser;
-  
+
       if (currentUser) {
         const uid = currentUser.uid;
         const userRef = doc(FIREBASE_DB, "users", uid);
-  
+
         // Check user existence before adding workout
         const userSnapshot = await getDoc(userRef);
         if (!userSnapshot.exists()) {
           setError("USER NOT FOUND");
           return; // Exit the function early to prevent unnecessary operation
         }
-  
+
         await addDoc(collection(userRef, "workouts"), plan);
         router.back();
       }
@@ -168,7 +178,13 @@ const WorkoutForm = () => {
       <FunctionalHeader
         title=""
         onSave={handleSave}
-        onBack={() => router.back()}
+        onBack={() => setUnsavedChangesDialog(true)}
+      />
+      <UnsavedChangesDialog
+        visible={unsavedChangesDialog}
+        onStay={() => setUnsavedChangesDialog(false)}
+        onDismiss={() => router.back()}
+        theme={theme}
       />
       <ScrollView contentContainerStyle={styles.container}>
         <Text variant="headlineSmall" style={styles.title}>
@@ -258,7 +274,7 @@ const WorkoutForm = () => {
           {plan.exercises.map((exercise) => (
             <Exercise
               key={exercise.order}
-              name={exercise.name}
+              name={exercise.name.toUpperCase()}
               information={`${exercise.sets}x${exercise.reps}`}
               order={exercise.order!}
               imageURL={exercise.imageURL}
@@ -292,9 +308,9 @@ const WorkoutForm = () => {
               />
             </View>
             <ScrollView contentContainerStyle={styles.modalScroll}>
-              {availableExercises.map((exercise) => (
+              {availableExercises.map((exercise, index) => (
                 <ChooseExercise
-                  key={exercise.id}
+                  key={index}
                   data={exercise}
                   name={exercise.name}
                   onPress={(data) => handleSelectExercise(data)}
@@ -304,69 +320,43 @@ const WorkoutForm = () => {
             </ScrollView>
           </Modal>
         </Portal>
-        <Portal>
-          <Dialog
-            visible={dialogVisible}
-            style={{ backgroundColor: theme.colors.surface }}
-            onDismiss={() => setDialogVisible(false)}
-          >
-            <Dialog.Content>
-              <View style={styles.dialogContentContainer}>
-                <View style={styles.dialogInputContainer}>
-                  <Text variant="titleMedium">SETS: </Text>
-                  <TextInput
-                    value={sets}
-                    onChangeText={(text) => handleSetRepChange("sets", text)}
-                    maxLength={2}
-                    keyboardType="numeric"
-                  />
-                </View>
-                <View style={styles.dialogInputContainer}>
-                  <Text variant="titleMedium">REPS: </Text>
-                  <TextInput
-                    value={reps}
-                    onChangeText={(text) => handleSetRepChange("reps", text)}
-                    maxLength={2}
-                    keyboardType="numeric"
-                  />
-                </View>
-              </View>
-            </Dialog.Content>
-            <Dialog.Actions>
-              <Button onPress={addExercise}>Confirm</Button>
-            </Dialog.Actions>
-          </Dialog>
-        </Portal>
+        <SetRepDialog
+          visible={dialogVisible}
+          sets={sets}
+          reps={reps}
+          onCancel={() => setDialogVisible(false)}
+          onChange={handleSetRepChange}
+          onConfirm={addExercise}
+          theme={theme}
+        />
       </ScrollView>
       {error && (
         <Snackbar
-        visible={error ? true : false}
-        onDismiss={() =>
-          setError("")
-        }
-        style={{
-          paddingRight: 10,
-          backgroundColor: theme.colors.errorContainer,
-        }}
-        duration={3000}
-        action={{
-          label: "DISMISS",
-          labelStyle: {
-            color: theme.colors.onBackground,
-            fontFamily: "ProtestStrike",
-          },
-        }}
-      >
-        <Text
-          variant="titleMedium"
+          visible={error ? true : false}
+          onDismiss={() => setError("")}
           style={{
-            color: theme.colors.onErrorContainer,
-            fontFamily: "ProtestStrike",
+            paddingRight: 10,
+            backgroundColor: theme.colors.errorContainer,
+          }}
+          duration={3000}
+          action={{
+            label: "DISMISS",
+            labelStyle: {
+              color: theme.colors.onBackground,
+              fontFamily: "ProtestStrike",
+            },
           }}
         >
-          {error}
-        </Text>
-      </Snackbar>
+          <Text
+            variant="titleMedium"
+            style={{
+              color: theme.colors.onErrorContainer,
+              fontFamily: "ProtestStrike",
+            }}
+          >
+            {error}
+          </Text>
+        </Snackbar>
       )}
     </View>
   );
@@ -382,7 +372,6 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   modalScroll: {
-    flex: 1,
     flexDirection: "row",
     justifyContent: "space-evenly",
     gap: 10,

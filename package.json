@@ -52,7 +52,8 @@
     "react-native-vector-icons": "^10.0.3",
     "react-native-web": "~0.19.6",
     "react-native-wheel-scrollview-picker": "^2.0.4",
-    "undefined": "@firebase/auth/react-native"
+    "undefined": "@firebase/auth/react-native",
+    "@react-native-community/netinfo": "11.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

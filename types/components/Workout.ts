@@ -1,15 +1,8 @@
 import { MD3Theme } from "react-native-paper";
-
-export interface WorkoutData {
-  id: number;
-  url: string;
-  title: string;
-  information: string;
-  difficulty: number;
-}
+import { WorkoutPlan } from "../states/Plan";
 
 export interface WorkoutProps {
-  id: number;
+  id: string;
   title: string;
   information: string;
   difficulty: number;
@@ -18,9 +11,11 @@ export interface WorkoutProps {
   theme: MD3Theme
 };
 
-
+export interface DefaultWorkoutPlan extends WorkoutPlan {
+  bannerURL: string;
+}
 
 export interface WorkoutListProps {
-  data: WorkoutData[];
+  data: DefaultWorkoutPlan[];
   theme: MD3Theme;
 }

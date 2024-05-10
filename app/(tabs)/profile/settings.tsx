@@ -20,6 +20,7 @@ import { Settings } from "@/types/states/Settings";
 import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebase-config";
 import { collection, doc, getDoc, updateDoc } from "firebase/firestore";
 import useFirebase from "@/utils/hooks/useFirebase";
+import { formatDate } from "@/helpers/formatDate";
 
 registerTranslation("en", en);
 
@@ -39,10 +40,10 @@ function SettingsScreen() {
     dateOfBirth: new Date(),
     weight: "",
     height: "",
-    gender: ""
+    gender: "",
   });
 
-  const [settings, setSettings] = useState(initialSettings);
+  const [settings, setSettings] = useState<Settings>();
 
   const [hasChanged, setHasChanged] = useState(false);
 
@@ -75,7 +76,12 @@ function SettingsScreen() {
               height: userData.height.toString(),
               gender: userData.gender,
             });
-            setSettings(initialSettings);
+            setSettings({
+              dateOfBirth: userData.dob.toDate(),
+              weight: userData.weight.toString(),
+              height: userData.height.toString(),
+              gender: userData.gender,
+            });
           } else {
             setStatus({ ...status, error: "RESOURCE NOT FOUND" });
           }
@@ -108,7 +114,7 @@ function SettingsScreen() {
     }));
     setInitialSettings({
       ...initialSettings,
-      [settingType]: settings[settingType],
+      [settingType]: settings![settingType],
     });
     setHasChanged(true);
   };
@@ -134,9 +140,9 @@ function SettingsScreen() {
   const handleChange = (settingType: string, value: string | undefined) => {
     if (value) {
       value.replace(/[^0-9]/g, "");
-      setSettings({ ...settings, [settingType]: value || "" });
+      setSettings({ ...settings!, [settingType]: value || "" });
     } else {
-      setSettings({ ...settings, [settingType]: "" });
+      setSettings({ ...settings!, [settingType]: "" });
     }
   };
 
@@ -150,14 +156,14 @@ function SettingsScreen() {
         const usersRef = collection(FIREBASE_DB, "users");
         const userDoc = doc(usersRef, uid);
 
-        if(userDoc) {
+        if (userDoc) {
           const updateData = {
             height: parseInt(initialSettings.height),
             weight: parseInt(initialSettings.weight),
             gender: initialSettings.gender,
             dob: initialSettings.dateOfBirth,
           };
-  
+
           await updateDoc(userDoc, updateData);
           setStatus((prevStatus) => {
             return { ...prevStatus, success: "SAVED SUCCESSFULLY" };
@@ -185,15 +191,6 @@ function SettingsScreen() {
     }
   };
 
-  const formattedDate = initialSettings.dateOfBirth.toLocaleDateString(
-    "en-GB",
-    {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    }
-  );
-
   const handleSignOut = () => {
     signOut();
     router.navigate("/(auth)/sign-in");
@@ -218,194 +215,202 @@ function SettingsScreen() {
         }
       />
 
-      <UnsavedChangesDialog
-        visible={dialogStates.backActionDialog}
-        onStay={() => handleStay()}
-        onDismiss={() => handleBack()}
-        theme={theme}
-      />
-      <PickerDialog
-        visible={dialogStates.heightDialog}
-        onConfirm={() => handleConfirm("heightDialog", "height")}
-        value={settings.height}
-        onChange={(value) => {
-          handleChange("height", value);
-        }}
-        onCancel={() => handleDismiss("heightDialog")}
-        type="height"
-        theme={theme}
-      />
-      <PickerDialog
-        visible={dialogStates.weightDialog}
-        onConfirm={() => handleConfirm("weightDialog", "weight")}
-        onCancel={() => handleDismiss("weightDialog")}
-        value={settings.weight}
-        onChange={(value) => {
-          handleChange("weight", value);
-        }}
-        type="weight"
-        theme={theme}
-      />
-
-      <DatePickerModal
-        presentationStyle="overFullScreen"
-        locale="en"
-        mode="single"
-        onChange={(value) => {
-          if (value.date)
-            setSettings({ ...settings, dateOfBirth: new Date(value.date) });
-        }}
-        visible={dialogStates.dateOfBirthDialog}
-        onDismiss={() => handleDismiss("dateOfBirthDialog")}
-        date={initialSettings.dateOfBirth}
-        onConfirm={() => handleConfirm("dateOfBirthDialog", "dateOfBirth")}
-      />
-
-      {status.isLoading ? (
+      {status.isLoading || !settings ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" style={styles.loadingIndicator} />
         </View>
       ) : (
-        <View style={styles.listContainer}>
-          {/* Height */}
-          <View style={styles.listItem}>
-            <View style={styles.listItemGroup}>
-              <Icon
-                library="MaterialCommunityIcons"
-                name="human-male-height"
-                color={theme.colors.outline}
-              />
-              <Text variant="titleMedium" style={styles.itemTitle}>
-                HEIGHT
-              </Text>
-            </View>
-            <TouchableOpacity
-              style={{
-                ...styles.selectField,
-                borderColor: theme.colors.outline,
-              }}
-              activeOpacity={0.8}
-              onPress={() => showDialogue("heightDialog")}
-            >
-              <Text variant="titleMedium" style={styles.text}>
-                {initialSettings.height || 0} cm
-              </Text>
-              <Icon
-                library="Entypo"
-                name="triangle-down"
-                color={theme.colors.outline}
-                size={20}
-              />
-            </TouchableOpacity>
-          </View>
-          {/* Weight */}
-          <View style={styles.listItem}>
-            <View style={styles.listItemGroup}>
-              <Icon
-                library="MaterialCommunityIcons"
-                name="weight"
-                color={theme.colors.outline}
-              />
-              <Text variant="titleMedium" style={styles.itemTitle}>
-                WEIGHT
-              </Text>
-            </View>
-            <TouchableOpacity
-              style={{
-                ...styles.selectField,
-                borderColor: theme.colors.outline,
-              }}
-              activeOpacity={0.8}
-              onPress={() => showDialogue("weightDialog")}
-            >
-              <Text variant="titleMedium" style={styles.text}>
-                {initialSettings.weight || 0} kg
-              </Text>
-              <Icon
-                library="Entypo"
-                name="triangle-down"
-                color={theme.colors.outline}
-                size={20}
-              />
-            </TouchableOpacity>
-          </View>
-          {/*Date of birth*/}
-          <View style={styles.listItem}>
-            <View style={styles.listItemGroup}>
-              <Icon
-                library="MaterialCommunityIcons"
-                name="calendar"
-                color={theme.colors.outline}
-              />
-              <Text variant="titleMedium" style={styles.itemTitle}>
-                DATE OF BIRTH
-              </Text>
-            </View>
-            <TouchableOpacity
-              style={{
-                ...styles.selectField,
-                borderColor: theme.colors.outline,
-              }}
-              activeOpacity={0.8}
-              onPress={() => showDialogue("dateOfBirthDialog")}
-            >
-              <Text variant="titleMedium" style={styles.text}>{formattedDate}</Text>
-              <Icon
-                library="Entypo"
-                name="triangle-down"
-                color={theme.colors.outline}
-                size={20}
-              />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.listItem}>
-            <View style={styles.listItemGroup}>
-              <Icon
-                library="MaterialCommunityIcons"
-                name="gender-male-female"
-                color={theme.colors.outline}
-              />
-              <Text variant="titleMedium" style={styles.itemTitle}>
-                GENDER
-              </Text>
-            </View>
-            <SegmentedButtons
-              value={initialSettings.gender}
-              onValueChange={value => setInitialSettings({...initialSettings, gender: value})}
-              style={styles.segmentedButtons}
-              buttons={[
-                {
-                  value: 'male',
-                  label: 'Male',
-                  icon: 'gender-male',
-                  labelStyle: styles.text
-                  
-                },
-                {
-                  value: 'female',
-                  label: 'Female',
-                  icon: 'gender-female',
-                  labelStyle: styles.text
-                },
-              ]}
-            />
-          </View>
-          <Button
-            style={{
-              ...styles.logoutButton,
-              backgroundColor: theme.colors.primary,
+        <>
+          <UnsavedChangesDialog
+            visible={dialogStates.backActionDialog}
+            onStay={() => handleStay()}
+            onDismiss={() => handleBack()}
+            theme={theme}
+          />
+          <PickerDialog
+            visible={dialogStates.heightDialog}
+            onConfirm={() => handleConfirm("heightDialog", "height")}
+            value={settings.height}
+            onChange={(value) => {
+              handleChange("height", value);
             }}
-            mode="contained"
-            onPress={handleSignOut}
-          >
-            <Text
-              variant="titleMedium"
-              style={{ ...styles.text, color: theme.colors.onPrimary }}
+            onCancel={() => handleDismiss("heightDialog")}
+            type="height"
+            theme={theme}
+          />
+          <PickerDialog
+            visible={dialogStates.weightDialog}
+            onConfirm={() => handleConfirm("weightDialog", "weight")}
+            onCancel={() => handleDismiss("weightDialog")}
+            value={settings.weight}
+            onChange={(value) => {
+              handleChange("weight", value);
+            }}
+            type="weight"
+            theme={theme}
+          />
+
+          <DatePickerModal
+            presentationStyle="overFullScreen"
+            locale="en"
+            mode="single"
+            onChange={(value) => {
+              if (value.date)
+                setSettings({
+                  ...settings!,
+                  dateOfBirth: new Date(value.date),
+                });
+            }}
+            visible={dialogStates.dateOfBirthDialog}
+            onDismiss={() => handleDismiss("dateOfBirthDialog")}
+            date={settings!.dateOfBirth}
+            onConfirm={() => handleConfirm("dateOfBirthDialog", "dateOfBirth")}
+          />
+          
+          <View style={styles.listContainer}>
+            {/* Height */}
+            <View style={styles.listItem}>
+              <View style={styles.listItemGroup}>
+                <Icon
+                  library="MaterialCommunityIcons"
+                  name="human-male-height"
+                  color={theme.colors.outline}
+                />
+                <Text variant="titleMedium" style={styles.itemTitle}>
+                  HEIGHT
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={{
+                  ...styles.selectField,
+                  borderColor: theme.colors.outline,
+                }}
+                activeOpacity={0.8}
+                onPress={() => showDialogue("heightDialog")}
+              >
+                <Text variant="titleMedium" style={styles.text}>
+                  {initialSettings.height || 0} cm
+                </Text>
+                <Icon
+                  library="Entypo"
+                  name="triangle-down"
+                  color={theme.colors.outline}
+                  size={20}
+                />
+              </TouchableOpacity>
+            </View>
+            {/* Weight */}
+            <View style={styles.listItem}>
+              <View style={styles.listItemGroup}>
+                <Icon
+                  library="MaterialCommunityIcons"
+                  name="weight"
+                  color={theme.colors.outline}
+                />
+                <Text variant="titleMedium" style={styles.itemTitle}>
+                  WEIGHT
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={{
+                  ...styles.selectField,
+                  borderColor: theme.colors.outline,
+                }}
+                activeOpacity={0.8}
+                onPress={() => showDialogue("weightDialog")}
+              >
+                <Text variant="titleMedium" style={styles.text}>
+                  {initialSettings.weight || 0} kg
+                </Text>
+                <Icon
+                  library="Entypo"
+                  name="triangle-down"
+                  color={theme.colors.outline}
+                  size={20}
+                />
+              </TouchableOpacity>
+            </View>
+            {/*Date of birth*/}
+            <View style={styles.listItem}>
+              <View style={styles.listItemGroup}>
+                <Icon
+                  library="MaterialCommunityIcons"
+                  name="calendar"
+                  color={theme.colors.outline}
+                />
+                <Text variant="titleMedium" style={styles.itemTitle}>
+                  DATE OF BIRTH
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={{
+                  ...styles.selectField,
+                  borderColor: theme.colors.outline,
+                }}
+                activeOpacity={0.8}
+                onPress={() => showDialogue("dateOfBirthDialog")}
+              >
+                <Text variant="titleMedium" style={styles.text}>
+                  {formatDate(initialSettings.dateOfBirth)}
+                </Text>
+                <Icon
+                  library="Entypo"
+                  name="triangle-down"
+                  color={theme.colors.outline}
+                  size={20}
+                />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.listItem}>
+              <View style={styles.listItemGroup}>
+                <Icon
+                  library="MaterialCommunityIcons"
+                  name="gender-male-female"
+                  color={theme.colors.outline}
+                />
+                <Text variant="titleMedium" style={styles.itemTitle}>
+                  GENDER
+                </Text>
+              </View>
+              <SegmentedButtons
+                value={initialSettings.gender}
+                onValueChange={(value) =>
+                  setInitialSettings({ ...initialSettings, gender: value })
+                }
+                style={styles.segmentedButtons}
+                buttons={[
+                  {
+                    value: "male",
+                    label: "Male",
+                    icon: "gender-male",
+                    labelStyle: styles.text,
+                  },
+                  {
+                    value: "female",
+                    label: "Female",
+                    icon: "gender-female",
+                    labelStyle: styles.text,
+                  },
+                ]}
+              />
+            </View>
+            <Button
+              style={{
+                ...styles.logoutButton,
+                backgroundColor: theme.colors.primary,
+              }}
+              mode="contained"
+              onPress={handleSignOut}
             >
-              SIGN OUT
-            </Text>{" "}
-          </Button>
-        </View>
+              <Text
+                variant="titleMedium"
+                style={{ ...styles.text, color: theme.colors.onPrimary }}
+              >
+                SIGN OUT
+              </Text>{" "}
+            </Button>
+          </View>
+        </>
       )}
 
       {/* Error Snackbar */}

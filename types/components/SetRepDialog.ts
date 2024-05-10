@@ -1,9 +1,10 @@
 import { MD3Theme } from "react-native-paper";
 
-export interface PromptDialogProps {
+export interface SetRepDialogProps {
   visible: boolean;
-  title: string;
-  content: string;
+  sets: string,
+  reps: string,
+  onChange: (type: "reps" | "sets", text?: string) => void;
   onConfirm: () => void;
   onCancel: () => void;
   theme: MD3Theme;
