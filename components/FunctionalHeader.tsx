@@ -1,5 +1,5 @@
 // Header.js
-import { FunctionalHeaderProps } from "@/types/components/Header";
+import { FunctionalHeaderProps } from "@/types/components/FunctionalHeader";
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import { Text, IconButton, Button, useTheme } from "react-native-paper";
@@ -35,6 +35,7 @@ function FunctionalHeader({ title, onSave, onBack } : FunctionalHeaderProps) {
   );
 }
 
+// This is where all of the styles for this component reside
 const styles = StyleSheet.create({
   header: {
     width: "100%",

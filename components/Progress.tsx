@@ -3,7 +3,7 @@ import { Text } from "react-native-paper";
 import React from "react";
 import { DataBlockProps, ProgressProps } from "@/types/components/Progress";
 
-export default function Progress({ data, theme }: ProgressProps) {
+function Progress({ data, theme }: ProgressProps) {
   return (
     <View style={styles.container}>
       <DataBlock value={data.workouts ? data.workouts : 0} suffix={"WORKOUTS"} theme={theme} />
@@ -12,6 +12,7 @@ export default function Progress({ data, theme }: ProgressProps) {
   );
 }
 
+// A component that's going to display labeled data
 export function DataBlock({ value, suffix, theme }: DataBlockProps) {
   return (
     <View style={styles.dataBlockContainer}>
@@ -30,6 +31,8 @@ export function DataBlock({ value, suffix, theme }: DataBlockProps) {
     </View>
   );
 }
+
+export default Progress;
 
 // This is where all of the styles for this component reside
 const styles = StyleSheet.create({

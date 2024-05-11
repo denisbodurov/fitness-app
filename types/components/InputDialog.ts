@@ -1,6 +1,7 @@
 import { MD3Theme } from "react-native-paper";
 
-export interface PickerDialogProps {
+// Defining the type of the InputDialog component
+export interface InputDialogProps {
   value?: string;
   visible: boolean;
   onChange: (text?: string) => void;

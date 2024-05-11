@@ -1,7 +1,6 @@
 import Icon from "@/components/Icon";
-import UnsavedChangesDialog from "@/components/UnsavedChangesDialog";
 import { router } from "expo-router";
-import React, { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import { View, StyleSheet, TouchableOpacity, Platform } from "react-native";
 import {
   Text,
@@ -12,7 +11,7 @@ import {
   SegmentedButtons,
 } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import PickerDialog from "@/components/PickerDialog";
+import InputDialog from "@/components/InputDialog";
 import { DatePickerModal } from "react-native-paper-dates";
 import FunctionalHeader from "@/components/FunctionalHeader";
 import { en, registerTranslation } from "react-native-paper-dates";
@@ -21,6 +20,7 @@ import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebase-config";
 import { collection, doc, getDoc, updateDoc } from "firebase/firestore";
 import useFirebase from "@/utils/hooks/useFirebase";
 import { formatDate } from "@/helpers/formatDate";
+import PromptDialog from "@/components/PromptDialog";
 
 registerTranslation("en", en);
 
@@ -221,13 +221,15 @@ function SettingsScreen() {
         </View>
       ) : (
         <>
-          <UnsavedChangesDialog
+          <PromptDialog
             visible={dialogStates.backActionDialog}
-            onStay={() => handleStay()}
-            onDismiss={() => handleBack()}
+            title="You have unsaved changes!"
+            content="Are you sure you want to discard your changes?"
+            onConfirm={handleBack}
+            onCancel={handleStay}
             theme={theme}
           />
-          <PickerDialog
+          <InputDialog
             visible={dialogStates.heightDialog}
             onConfirm={() => handleConfirm("heightDialog", "height")}
             value={settings.height}
@@ -238,7 +240,7 @@ function SettingsScreen() {
             type="height"
             theme={theme}
           />
-          <PickerDialog
+          <InputDialog
             visible={dialogStates.weightDialog}
             onConfirm={() => handleConfirm("weightDialog", "weight")}
             onCancel={() => handleDismiss("weightDialog")}
@@ -266,7 +268,7 @@ function SettingsScreen() {
             date={settings!.dateOfBirth}
             onConfirm={() => handleConfirm("dateOfBirthDialog", "dateOfBirth")}
           />
-          
+
           <View style={styles.listContainer}>
             {/* Height */}
             <View style={styles.listItem}>

@@ -2,10 +2,10 @@ import React from "react";
 import { StyleSheet, View } from "react-native";
 import { Image } from "expo-image";
 import { Text, TouchableRipple } from "react-native-paper";
-import { ChooseExerciseProps } from "@/types/components/ChooseExercise";
+import { SelectableExerciseProps } from "@/types/components/SelectableExercise";
 import { exerciseImages } from "@/constants/images";
 
-function ChooseExercise({ name, data, onPress, theme }: ChooseExerciseProps) {
+function SelectableExercise({ name, data, onPress, theme }: SelectableExerciseProps) {
 
   const URL = exerciseImages[data.imageURL.split('.')[0] as keyof typeof exerciseImages];    
 
@@ -37,7 +37,7 @@ function ChooseExercise({ name, data, onPress, theme }: ChooseExerciseProps) {
   );
 }
 
-export default ChooseExercise;
+export default SelectableExercise;
 
 // This is where all of the styles for this component reside
 const styles = StyleSheet.create({

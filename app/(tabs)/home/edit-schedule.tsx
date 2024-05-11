@@ -1,5 +1,5 @@
 import FunctionalHeader from "@/components/FunctionalHeader";
-import UnsavedChangesDialog from "@/components/UnsavedChangesDialog";
+import PromptDialog from "@/components/PromptDialog";
 import defaultSchedule from "@/constants/defaultSchedule";
 import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebase-config";
 import { ScheduleData } from "@/types/components/Schedule";
@@ -14,7 +14,7 @@ import {
   PaperProvider,
   ActivityIndicator,
   Snackbar,
-  Text
+  Text,
 } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -117,14 +117,13 @@ function EditScheduleScreen() {
           schedule: schedule,
         };
 
-        if(userDoc) {
+        if (userDoc) {
           await updateDoc(userDoc, updateData);
-          setStatus({...status, success: "UPDATED SUCCESSFULLY"})
+          setStatus({ ...status, success: "UPDATED SUCCESSFULLY" });
           setHasChanged(false);
         } else {
-          setStatus({...status, error: "USER DOCUMENT NOT FOUND"})
+          setStatus({ ...status, error: "USER DOCUMENT NOT FOUND" });
         }
-
       } else {
         setStatus({ ...status, error: "AUTH SESSION NOT FOUND" });
       }
@@ -153,10 +152,12 @@ function EditScheduleScreen() {
         onBack={() => (hasChanged ? showDialogue() : router.back())}
       />
       <PaperProvider>
-        <UnsavedChangesDialog
+        <PromptDialog
           visible={isDialogVisible}
-          onStay={handleStay}
-          onDismiss={handleDismiss}
+          title="You have unsaved changes!"
+          content="Are you sure you want to discard your changes?"
+          onConfirm={handleDismiss}
+          onCancel={handleStay}
           theme={theme}
         />
         <List.Section style={styles.container}>
@@ -297,20 +298,27 @@ function EditScheduleScreen() {
       {status.error && (
         <Snackbar
           visible={status.error ? true : false}
-          onDismiss={() => setStatus( (prevStatus) => { return {...prevStatus, error: ""}})}
+          onDismiss={() =>
+            setStatus((prevStatus) => {
+              return { ...prevStatus, error: "" };
+            })
+          }
           style={{ backgroundColor: theme.colors.errorContainer }}
           duration={3000}
           action={{
             label: "DISMISS",
             labelStyle: {
               color: theme.colors.onBackground,
-              fontFamily: "ProtestStrike"
-            }
+              fontFamily: "ProtestStrike",
+            },
           }}
         >
           <Text
             variant="titleMedium"
-            style={{ color: theme.colors.onErrorContainer, fontFamily: "ProtestStrike" }}
+            style={{
+              color: theme.colors.onErrorContainer,
+              fontFamily: "ProtestStrike",
+            }}
           >
             {status.error}
           </Text>
@@ -320,15 +328,19 @@ function EditScheduleScreen() {
       {status.success && (
         <Snackbar
           visible={status.success ? true : false}
-          onDismiss={() => setStatus( (prevStatus) => { return {...prevStatus, success: ""}})}
+          onDismiss={() =>
+            setStatus((prevStatus) => {
+              return { ...prevStatus, success: "" };
+            })
+          }
           style={{ backgroundColor: "#5cb85c" }}
           duration={3000}
           action={{
             label: "DISMISS",
             labelStyle: {
               color: "white",
-              fontFamily: "ProtestStrike"
-            }
+              fontFamily: "ProtestStrike",
+            },
           }}
         >
           <Text

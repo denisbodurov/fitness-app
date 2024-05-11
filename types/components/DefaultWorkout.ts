@@ -1,7 +1,7 @@
 import { MD3Theme } from "react-native-paper";
 import { WorkoutPlan } from "../states/Plan";
 
-export interface WorkoutProps {
+export interface DefaultWorkoutProps {
   id: string;
   title: string;
   information: string;
@@ -15,7 +15,8 @@ export interface DefaultWorkoutPlan extends WorkoutPlan {
   bannerURL: string;
 }
 
-export interface WorkoutListProps {
+// Defining the type of the DefaultWorkoutList component
+export interface DefaultWorkoutListProps {
   data: DefaultWorkoutPlan[];
   theme: MD3Theme;
 }

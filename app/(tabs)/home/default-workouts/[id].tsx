@@ -1,4 +1,4 @@
-import { router, useLocalSearchParams, usePathname } from "expo-router";
+import { router, usePathname } from "expo-router";
 import { Platform, StyleSheet, View } from "react-native";
 import {
   Button,
@@ -225,33 +225,6 @@ export default function DefaultWorkoutScreen() {
       } else {
         handleSkip();
       }
-    }
-  };
-
-  const handleDelete = async () => {
-    setStatus((prevStatus) => {
-      return { ...prevStatus, deleting: true };
-    });
-    try {
-      const currentUser = FIREBASE_AUTH.currentUser;
-
-      if (currentUser) {
-        const uid = currentUser.uid;
-        const userRef = doc(FIREBASE_DB, "users", uid);
-        const workoutsRef = collection(userRef, "workouts");
-
-        // Construct a reference to the specific workout document
-        const workoutRef = doc(workoutsRef, workoutId);
-
-        // Delete the workout document
-        await deleteDoc(workoutRef);
-
-        router.back();
-      } else {
-        console.error("No user logged in");
-      }
-    } catch (error) {
-      console.error("Error deleting workout plan:", error);
     }
   };
 

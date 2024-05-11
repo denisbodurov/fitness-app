@@ -4,12 +4,12 @@ import { Platform, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text, Button, useTheme } from "react-native-paper";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import WorkoutList from "@/components/WorkoutList";
+import DefaultWorkoutList from "@/components/DefaultWorkoutList";
 import Schedule from "@/components/Schedule";
 import { ScheduleData } from "@/types/components/Schedule";
 import defaultSchedule from "@/constants/defaultSchedule";
 import Progress from "@/components/Progress";
-import { DefaultWorkoutPlan } from "@/types/components/Workout";
+import { DefaultWorkoutPlan } from "@/types/components/DefaultWorkout";
 import { collection, disableNetwork, doc, getDocs, onSnapshot, query } from "firebase/firestore";
 import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebase-config";
 import { Activity } from "@/types/states/Activity";
@@ -202,7 +202,7 @@ export default function HomeScreen() {
                 BEGINNER
               </Text>
             </View>
-            <WorkoutList data={beginner} theme={theme} />
+            <DefaultWorkoutList data={beginner} theme={theme} />
           </View>
           <View style={styles.section}>
             <View style={styles.sectionTitleContainer}>
@@ -210,7 +210,7 @@ export default function HomeScreen() {
                 INTERMEDIATE
               </Text>
             </View>
-            <WorkoutList data={intermediate} theme={theme} />
+            <DefaultWorkoutList data={intermediate} theme={theme} />
           </View>
           <View style={styles.section}>
             <View style={styles.sectionTitleContainer}>
@@ -218,7 +218,7 @@ export default function HomeScreen() {
                 ADVANCED
               </Text>
             </View>
-            <WorkoutList data={advanced} theme={theme} />
+            <DefaultWorkoutList data={advanced} theme={theme} />
           </View>
         </ScrollView>
       );

@@ -3,17 +3,17 @@ import React from "react";
 import { StyleSheet, View } from "react-native";
 import { Image } from "expo-image";
 import { IconButton, Text } from "react-native-paper";
-import { ExerciseProps } from "@/types/components/Exercise";
+import { SelectedExerciseProps } from "@/types/components/SelectedExercise";
 import { exerciseImages } from "@/constants/images";
 
-function Exercise({
+function SelectedExercise({
   name,
   order,
   information,
   imageURL,
   onRemove,
   theme,
-}: ExerciseProps) {
+}: SelectedExerciseProps) {
   //Getting the preloaded image for the current exercise
   const URL =
     exerciseImages[imageURL.split(".")[0] as keyof typeof exerciseImages];
@@ -44,7 +44,7 @@ function Exercise({
   );
 }
 
-export default Exercise;
+export default SelectedExercise;
 
 // This is where all of the styles for this component reside
 const styles = StyleSheet.create({

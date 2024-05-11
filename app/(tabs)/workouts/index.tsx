@@ -1,9 +1,8 @@
-import CustomPlan from "@/components/CustomPlan";
+import CustomPlan from "@/components/WorkoutPlan";
 import Icon from "@/components/Icon";
 import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebase-config";
 import { WorkoutPlan } from "@/types/states/Plan";
-import { isLoading } from "expo-font";
-import { Link, useNavigation } from "expo-router";
+import { Link } from "expo-router";
 import { collection, doc, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import {

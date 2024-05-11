@@ -4,16 +4,16 @@ import React, { useEffect, useState } from "react";
 import Icon from "./Icon";
 import { Link } from "expo-router";
 import { Image } from "expo-image";
-import { WorkoutProps } from "@/types/components/Workout";
+import { DefaultWorkoutProps } from "@/types/components/DefaultWorkout";
 
-export default function Workout({
+function DefaultWorkout({
   id,
   bannerURL,
   title,
   information,
   difficulty,
   containerHeight = 150
-}: WorkoutProps) {
+}: DefaultWorkoutProps) {
 
   return (
     <Link asChild href={`/(tabs)/home/default-workouts/${id}`}>
@@ -59,6 +59,8 @@ export default function Workout({
     </Link>
   );
 }
+
+export default DefaultWorkout;
 
 const style = StyleSheet.create({
   container: {

@@ -1,15 +1,13 @@
-import ChooseExercise from "@/components/ChooseExercise";
-import Exercise from "@/components/Exercise";
+import SelectableExercise from "@/components/SelectableExercise";
+import SelectedExercise from "@/components/SelectedExercise";
 import FunctionalHeader from "@/components/FunctionalHeader";
 import RestPicker from "@/components/RestPicker";
 import SetRepDialog from "@/components/SetRepDialog";
-import UnsavedChangesDialog from "@/components/UnsavedChangesDialog";
 import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebase-config";
 import { ExerciseState } from "@/types/states/Exercise";
 import { WorkoutPlan } from "@/types/states/Plan";
-import { isLoading } from "expo-font";
-import { router, useNavigation, usePathname } from "expo-router";
-import { addDoc, collection, doc, getDoc, getDocs, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
+import { router, usePathname } from "expo-router";
+import { collection, doc, getDoc, getDocs, onSnapshot, setDoc } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet, ScrollView, Platform } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
@@ -25,6 +23,7 @@ import {
   Snackbar,
 } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import PromptDialog from "@/components/PromptDialog";
 
 const EditWorkout = () => {
   const theme = useTheme();
@@ -251,13 +250,15 @@ const EditWorkout = () => {
         onBack={() => setUnsavedChangesDialog(true)}
       />
       
-      <UnsavedChangesDialog
+      <PromptDialog
         visible={unsavedChangesDialog}
-        onStay={() => setUnsavedChangesDialog(false)}
-        onDismiss={() => router.back()}
+        title="You have unsaved changes!"
+        content="Are you sure you want to discard your changes?"
+        onConfirm={() => router.back()}
+        onCancel={() => setUnsavedChangesDialog(false)}
         theme={theme}
       />
-      
+
       <ScrollView contentContainerStyle={styles.container}>
         <Text variant="headlineSmall" style={styles.title}>
           CREATE WORKOUT PLAN
@@ -344,7 +345,7 @@ const EditWorkout = () => {
         </Button>
         <View style={styles.group}>
           {plan.exercises.map((exercise) => (
-            <Exercise
+            <SelectedExercise
               key={exercise.order}
               name={exercise.name}
               information={`${exercise.sets}x${exercise.reps}`}
@@ -381,7 +382,7 @@ const EditWorkout = () => {
             </View>
             <ScrollView contentContainerStyle={styles.modalScroll}>
               {availableExercises.map((exercise) => (
-                <ChooseExercise
+                <SelectableExercise
                   key={exercise.id}
                   data={exercise}
                   name={exercise.name}

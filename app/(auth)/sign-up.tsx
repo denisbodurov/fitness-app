@@ -28,7 +28,7 @@ import { Credentials } from "@/types/states/Credentials";
 import Icon from "@/components/Icon";
 import { formatDate } from "@/helpers/formatDate";
 import SelectField from "@/components/SelectField";
-import PickerDialog from "@/components/PickerDialog";
+import PickerDialog from "@/components/InputDialog";
 
 export default function ModalScreen() {
   const theme = useTheme();

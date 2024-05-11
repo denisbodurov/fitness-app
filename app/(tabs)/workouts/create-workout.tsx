@@ -1,9 +1,8 @@
-import ChooseExercise from "@/components/ChooseExercise";
-import Exercise from "@/components/Exercise";
+import SelectableExercise from "@/components/SelectableExercise";
+import SelectedExercise from "@/components/SelectedExercise";
 import FunctionalHeader from "@/components/FunctionalHeader";
 import RestPicker from "@/components/RestPicker";
 import SetRepDialog from "@/components/SetRepDialog";
-import UnsavedChangesDialog from "@/components/UnsavedChangesDialog";
 import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebase-config";
 import { ExerciseState } from "@/types/states/Exercise";
 import { WorkoutPlan } from "@/types/states/Plan";
@@ -31,6 +30,7 @@ import {
   Snackbar,
 } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import PromptDialog from "@/components/PromptDialog";
 
 const WorkoutForm = () => {
   const theme = useTheme();
@@ -180,10 +180,12 @@ const WorkoutForm = () => {
         onSave={handleSave}
         onBack={() => setUnsavedChangesDialog(true)}
       />
-      <UnsavedChangesDialog
+      <PromptDialog
         visible={unsavedChangesDialog}
-        onStay={() => setUnsavedChangesDialog(false)}
-        onDismiss={() => router.back()}
+        title="You haven't saved your workout plan!"
+        content="Are you sure you want to leave?"
+        onConfirm={() => router.back()}
+        onCancel={() => setUnsavedChangesDialog(false)}
         theme={theme}
       />
       <ScrollView contentContainerStyle={styles.container}>
@@ -272,7 +274,7 @@ const WorkoutForm = () => {
         </Button>
         <View style={styles.group}>
           {plan.exercises.map((exercise) => (
-            <Exercise
+            <SelectedExercise
               key={exercise.order}
               name={exercise.name.toUpperCase()}
               information={`${exercise.sets}x${exercise.reps}`}
@@ -309,7 +311,7 @@ const WorkoutForm = () => {
             </View>
             <ScrollView contentContainerStyle={styles.modalScroll}>
               {availableExercises.map((exercise, index) => (
-                <ChooseExercise
+                <SelectableExercise
                   key={index}
                   data={exercise}
                   name={exercise.name}
