@@ -39,45 +39,18 @@ export default function RootLayout() {
     ...FontAwesome.font,
   });
 
-
-  const [imagesLoaded, setImagesLoaded] = useState(false);
-
-  const _loadAssetsAsync = async () => {
-
-    const images = [
-      require("@/assets/images/default_workout_images/abs-beginner.jpg"),
-      require("@/assets/images/default_workout_images/legs-beginner.jpg"),
-      require("@/assets/images/default_workout_images/arms-beginner.jpg"),
-      require("@/assets/images/default_workout_images/arms-intermediate.jpg"),
-      require("@/assets/images/default_workout_images/abs-intermediate.jpg"),
-      require("@/assets/images/default_workout_images/legs-intermediate.jpg"),
-      require("@/assets/images/default_workout_images/arms-advanced.jpg"),
-      require("@/assets/images/default_workout_images/abs-advanced.jpg"),
-      require("@/assets/images/default_workout_images/legs-advanced.jpg"),
-    ];
-    
-
-    const imageAssets = images.map(image => Asset.fromModule(image));
-    await Promise.all(imageAssets.map(asset => asset.downloadAsync()));
-    setImagesLoaded(true);
-  };
-
-  useEffect(() => {
-    _loadAssetsAsync();
-  }, []);
-
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
     if (error) throw error;
   }, [error]);
 
   useEffect(() => {
-    if (loaded && imagesLoaded) {
+    if (loaded) {
       SplashScreen.hideAsync();
     }
-  }, [loaded, imagesLoaded]);
+  }, [loaded]);
 
-  if (!loaded || !imagesLoaded) {
+  if (!loaded) {
     return null;
   }
 
@@ -85,9 +58,11 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+  const colorScheme = useColorScheme(); // Getting the default theme of the user's device
   
+  // Rendering a Stack layout with 3 screens - [(tabs), (auth), index]
   return (
+    //Providing the app with Auth and Theme context by wrapping it in providers
     <FirebaseProvider>
       <PaperProvider theme={(colorScheme === "dark") ? DarkTheme : LightTheme}>
         <Stack>

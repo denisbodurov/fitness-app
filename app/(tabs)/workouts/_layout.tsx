@@ -1,11 +1,10 @@
-import { StackActions } from "@react-navigation/native";
-import { Stack, useFocusEffect, useNavigation, useSegments } from "expo-router";
-import { useCallback } from "react";
+import { Stack } from "expo-router";
 import { useTheme } from "react-native-paper";
 
 function WorkoutsLayout() {
-  const theme = useTheme();
+  const theme = useTheme(); // Getting the theme from the PaperProvider
 
+  //Returning a Stack layout with 4 screens - [index, [id], create-workout, edit-workout/[id]]
   return (
     <Stack>
       <Stack.Screen
@@ -20,9 +19,7 @@ function WorkoutsLayout() {
         options={{
           headerShown: false,
           contentStyle: { backgroundColor: theme.colors.background },
-          
         }}
-        
       />
       <Stack.Screen
         name="create-workout"

@@ -1,9 +1,10 @@
 import { Stack } from "expo-router";
 import { useTheme } from "react-native-paper";
 
-function FeedLayout() {
-  const theme = useTheme();
+function MotivationLayout() {
+  const theme = useTheme(); // Getting the theme from the PaperProvider
 
+  //Returning a Stack layout with 1 screen - [index]
   return (
     <Stack>
       <Stack.Screen
@@ -17,4 +18,4 @@ function FeedLayout() {
   );
 }
 
-export default FeedLayout;
+export default MotivationLayout;

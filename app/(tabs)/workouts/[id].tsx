@@ -418,6 +418,7 @@ export default function WorkoutScreen() {
                       />
                       <Timer seconds={seconds} />
                     </View>
+                    
                     <PromptDialog
                       visible={quitDialog}
                       title="Are you sure you want to quit?"

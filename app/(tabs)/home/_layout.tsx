@@ -1,9 +1,10 @@
 import { Stack } from "expo-router";
 import { useTheme } from "react-native-paper";
 
-function FeedLayout() {
-  const theme = useTheme();
+function HomeLayout() {
+  const theme = useTheme(); // Getting the theme from the PaperProvider
 
+  //Returning a Stack layout with 3 screens - [index, edit-schedule, default-workouts/[id]]
   return (
     <Stack>
       <Stack.Screen
@@ -31,4 +32,4 @@ function FeedLayout() {
   );
 }
 
-export default FeedLayout;
+export default HomeLayout;

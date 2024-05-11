@@ -1,39 +1,43 @@
-import React, { useContext, useEffect, useState } from "react";
-import { Redirect, Tabs, useSegments } from "expo-router";
+import { StyleSheet } from "react-native";
+import { useContext, useEffect, useState } from "react";
 import { Snackbar, TouchableRipple, Text, useTheme } from "react-native-paper";
-import Icon from "@/components/Icon";
-import { Platform, StyleSheet } from "react-native";
+import { Redirect, Tabs, useSegments } from "expo-router";
 import { FirebaseContext } from "@/providers/FirebaseProvider";
+import Icon from "@/components/Icon";
 import { IconProps } from "@/types/components/Icon";
 import NetInfo from "@react-native-community/netinfo";
 
-export default function TabLayout() {
-  const theme = useTheme();
-  const { user } = useContext(FirebaseContext);
+function TabLayout() {
+  const theme = useTheme(); // Getting the theme from the PaperProvider
+  const segment = useSegments(); // Getting all segments from the URL as an array
+  const page = segment[segment.length - 1]; // Getting the last segment in the aray which is the current endpoint
+  const pagesToDisplayTabBar = ["home", "workouts", "motivation", "profile"]; // Declaring an array of endpoints for which we want the TabBar to be visible
+  const { user } = useContext(FirebaseContext); // Getting the user object from the FirebaseProvider
 
-  const segment = useSegments();
-  const page = segment[segment.length - 1];
-  const pagesToHideTabBar = ["home", "workouts", "motivation", "profile"];
+  // Defining a state that's going to keep information about the user's connection
+  const [network, setNetwork] = useState({
+    offline: false,
+    reconnected: false,
+  });
 
-  const [connected, setConnected] = useState(true);
-  const [reconnected, setReconnected] = useState(false);
-
+  // Side effect that listens to changes in the user's connection and updates the state accordingly
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state) => {
-      if(state.isConnected) {
-        if(!connected) {
-          setReconnected(true);
+      if (state.isConnected) {
+        if (network.offline) {
+          setNetwork({ offline: false, reconnected: true });
         }
-        setConnected(true);
       } else {
-        setConnected(false);
+        setNetwork({ offline: true, reconnected: false });
       }
     });
 
     return unsubscribe();
-  });
+  }, [network]);
 
+  // Conditionally rendering the TabBar if the user is authenticated
   if (user) {
+    // Rendering a TabBar with 4 tabs - [home, workouts, motivaiton, profile]
     return (
       <>
         <Tabs
@@ -43,6 +47,7 @@ export default function TabLayout() {
               let iconName: string;
               let iconLibrary: IconProps["library"];
 
+              // Assigning the respective icon for each tab based on the route's name
               switch (route.name) {
                 case "home":
                   [iconName, iconLibrary] = ["house-chimney", "FontAwesome6"];
@@ -66,6 +71,7 @@ export default function TabLayout() {
                   [iconName, iconLibrary] = ["question", "AntDesign"];
                   break;
               }
+              //Returning the respective icon for each tab
               return (
                 <Icon
                   library={iconLibrary}
@@ -85,7 +91,8 @@ export default function TabLayout() {
             },
             tabBarStyle: {
               ...styles.tabBar,
-              display: !pagesToHideTabBar.includes(page) ? "none" : "flex",
+              //Conditionally hiding the TabBar for specific routes
+              display: !pagesToDisplayTabBar.includes(page) ? "none" : "flex",
               backgroundColor: theme.colors.surface,
             },
             tabBarLabelStyle: styles.tabBarItemLabel,
@@ -123,9 +130,10 @@ export default function TabLayout() {
             }}
           />
         </Tabs>
+        {/* Snackbar responsible for notifying the user when they don't have internet connection */}
         <Snackbar
           elevation={0}
-          visible={!connected}
+          visible={network.offline}
           onDismiss={() => console.log("Cant")}
           style={{
             ...styles.snackbar,
@@ -139,10 +147,13 @@ export default function TabLayout() {
             NO INTERNET CONNECTION
           </Text>
         </Snackbar>
+        {/* Snackbar responsible for notifying the user when they have successfully reconnected and have internet connection */}
         <Snackbar
-          visible={reconnected}
+          visible={network.reconnected}
           onDismiss={() =>
-            setReconnected(false)
+            setNetwork((prevNetwork) => {
+              return { ...prevNetwork, reconnected: false };
+            })
           }
           style={{ backgroundColor: "#5cb85c" }}
           duration={3000}
@@ -164,13 +175,17 @@ export default function TabLayout() {
       </>
     );
   } else {
-    <Redirect href="/(auth)/sign-in" />;
+    //Redirecting the user if they are not authenticated
+    return <Redirect href="/(auth)/sign-in" />;
   }
 }
 
+export default TabLayout;
+
+// This is where all of the styles for this component reside
 const styles = StyleSheet.create({
   tabBar: {
-    height: Platform.OS === "ios" ? 100 : 70,
+    height: 70,
     borderTopWidth: 0,
     shadowColor: "black",
     shadowOffset: { width: 0, height: -2 },

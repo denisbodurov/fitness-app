@@ -1,9 +1,10 @@
 import { Stack } from "expo-router";
 import { useTheme } from "react-native-paper";
 
-function FeedLayout() {
-  const theme = useTheme();
+function AuthLayout() {
+  const theme = useTheme(); // Getting the theme from the PaperProvider
 
+  //Returning a Stack layout with 2 screens - [sign-in, sign-up]
   return (
     <Stack>
       <Stack.Screen
@@ -21,8 +22,7 @@ function FeedLayout() {
         }}
       />
     </Stack>
-    
   );
 }
 
-export default FeedLayout;
+export default AuthLayout;
