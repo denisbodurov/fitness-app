@@ -1,4 +1,3 @@
-// Header.js
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { Image } from "expo-image";
@@ -38,6 +37,9 @@ function ChooseExercise({ name, data, onPress, theme }: ChooseExerciseProps) {
   );
 }
 
+export default ChooseExercise;
+
+// This is where all of the styles for this component reside
 const styles = StyleSheet.create({
   container: {
     flexDirection: "column",
@@ -82,4 +84,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default ChooseExercise;
+

@@ -31,6 +31,7 @@ export function DataBlock({ value, suffix, theme }: DataBlockProps) {
   );
 }
 
+// This is where all of the styles for this component reside
 const styles = StyleSheet.create({
   container: {
     flex: 1,

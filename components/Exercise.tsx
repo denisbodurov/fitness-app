@@ -6,24 +6,47 @@ import { IconButton, Text } from "react-native-paper";
 import { ExerciseProps } from "@/types/components/Exercise";
 import { exerciseImages } from "@/constants/images";
 
-function Exercise({name, order, information, imageURL, onRemove, theme } : ExerciseProps) {
-
-  const URL = exerciseImages[imageURL.split('.')[0] as keyof typeof exerciseImages];
+function Exercise({
+  name,
+  order,
+  information,
+  imageURL,
+  onRemove,
+  theme,
+}: ExerciseProps) {
+  //Getting the preloaded image for the current exercise
+  const URL =
+    exerciseImages[imageURL.split(".")[0] as keyof typeof exerciseImages];
 
   return (
-    <View style={{...styles.container, backgroundColor: theme.colors.surface}}>
-        <View style={styles.imageContainer}>
-            <Image style={styles.image} source={URL}/>
-        </View>
-        <View style={styles.textContainer}>
-          <Text variant="titleMedium" style={styles.title}>{name}</Text>
-          {information && <Text variant="titleMedium" style={styles.information}>{information}</Text>}
-        </View>
-        <IconButton icon="delete" iconColor="red" onPress={() => onRemove(order)}/>
+    <View
+      style={{ ...styles.container, backgroundColor: theme.colors.surface }}
+    >
+      <View style={styles.imageContainer}>
+        <Image style={styles.image} source={URL} />
+      </View>
+      <View style={styles.textContainer}>
+        <Text variant="titleMedium" style={styles.title}>
+          {name}
+        </Text>
+        {information && (
+          <Text variant="titleMedium" style={styles.information}>
+            {information}
+          </Text>
+        )}
+      </View>
+      <IconButton
+        icon="delete"
+        iconColor="red"
+        onPress={() => onRemove(order)}
+      />
     </View>
   );
 }
 
+export default Exercise;
+
+// This is where all of the styles for this component reside
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
@@ -54,8 +77,6 @@ const styles = StyleSheet.create({
   },
   image: {
     width: "100%",
-    height: "100%"
-  }
+    height: "100%",
+  },
 });
-
-export default Exercise;

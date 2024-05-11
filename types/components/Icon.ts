@@ -1,3 +1,4 @@
+// Defining type for the custom Icon component
 export interface IconProps {
   name: string;
   color: string;

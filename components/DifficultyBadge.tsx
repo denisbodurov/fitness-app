@@ -3,6 +3,7 @@ import { StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 
 function DifficultyBadge({ difficulty }: DifficultyBadgeProps) {
+  // Rendering the badge based on the difficulty that's been passed
   return (
     <View
       style={{
@@ -29,6 +30,9 @@ function DifficultyBadge({ difficulty }: DifficultyBadgeProps) {
   );
 }
 
+export default DifficultyBadge;
+
+// This is where all of the styles for this component reside
 const styles = StyleSheet.create({
   difficultyBadge: {
     flexDirection: "row",
@@ -43,5 +47,3 @@ const styles = StyleSheet.create({
     fontFamily: "ProtestStrike",
   },
 });
-
-export default DifficultyBadge;

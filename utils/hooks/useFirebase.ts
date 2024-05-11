@@ -23,14 +23,13 @@ const useFirebase = () => {
         email,
         password
       );
-
       return { user: userCredentials.user };
     } catch (error: any) {
       let errorMessage: string;
       switch (error.code) {
         case "auth/invalid-email":
         case "auth/user-not-found":
-        case "auth/wrong-password":
+        case "auth/invalid-credential":
           errorMessage = "Incorrect email or password";
           break;
         case "auth/network-request-failed":
@@ -54,7 +53,7 @@ const useFirebase = () => {
     gender: string,
     dob: Date,
     weight: number,
-    height: number,
+    height: number
   ) => {
     try {
       // Step 1: Create user with email and password
@@ -73,7 +72,6 @@ const useFirebase = () => {
       const userId = userCredentials.user.uid;
       const userRef = doc(FIREBASE_DB, "users", userId);
 
-      
       try {
         await setDoc(userRef, {
           gender: gender,
@@ -81,18 +79,15 @@ const useFirebase = () => {
           weight: weight,
           height: height,
           schedule: defaultSchedule,
-          workouts: []
         });
-      
+
         // If successful, return the user
         return { user: userCredentials.user };
       } catch (error) {
         // Firestore write failed, so delete the created user from Authentication
         await deleteUser(userCredentials.user);
-        console.error("Error creating user document in Firestore:", error);
         return { error: "Failed to create user account." };
       }
-      
     } catch (error: any) {
       let errorMessage: string;
       switch (error.code) {

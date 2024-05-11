@@ -1,5 +1,3 @@
-import React from "react";
-
 import { IconProps } from "@/types/components/Icon";
 
 import {
@@ -13,7 +11,7 @@ import {
   Entypo,
 } from "@expo/vector-icons";
 
-function Icon({ name, color, size = 28, library }: IconProps) {
+function Icon({ name, color, library, size = 28 }: IconProps) {
   const IconComponent = {
     FontAwesome,
     FontAwesome5,
@@ -25,7 +23,8 @@ function Icon({ name, color, size = 28, library }: IconProps) {
     Entypo,
   }[library];
 
-  return <IconComponent size={size} name={name} color={color}/>;
+  // Rendering an icon based on the passed props
+  return <IconComponent size={size} name={name} color={color} />;
 }
 
 export default Icon;
