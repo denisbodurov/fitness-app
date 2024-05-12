@@ -32,8 +32,8 @@ function TabLayout() {
       }
     });
 
-    return unsubscribe();
-  }, [network]);
+    return () => unsubscribe();
+  }, []);
 
   // Conditionally rendering the TabBar if the user is authenticated
   if (user) {
@@ -134,7 +134,7 @@ function TabLayout() {
         <Snackbar
           elevation={0}
           visible={network.offline}
-          onDismiss={() => console.log("Cant")}
+          onDismiss={() => {}}
           style={{
             ...styles.snackbar,
             backgroundColor: theme.colors.onSurfaceVariant,
