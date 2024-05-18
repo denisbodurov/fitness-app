@@ -2,7 +2,7 @@
   "expo": {
     "name": "Sparkfit",
     "slug": "fitness-app",
-    "version": "1.1.6",
+    "version": "1.1.8",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
