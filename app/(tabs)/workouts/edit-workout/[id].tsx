@@ -82,6 +82,11 @@ const EditWorkout = () => {
                 };
 
                 setPlan(selectedWorkout)
+                if(selectedWorkout.exercises) {
+                  console.log("here")
+                  setCurrentOrder(selectedWorkout.exercises[selectedWorkout.exercises.length - 1].order + 1)
+                }
+
               } else {
                 setStatus({
                   ...status,

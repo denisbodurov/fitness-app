@@ -6,6 +6,6 @@ export interface Credentials {
     confirmPassword: string;
     gender: "male" | "female" | "";
     dob: Date;
-    weight: number,
-    height: number,
+    weight: string,
+    height: string,
 }

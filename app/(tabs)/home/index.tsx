@@ -1,7 +1,12 @@
 import Icon from "@/components/Icon";
 import { useEffect, useState } from "react";
 import { Platform, StyleSheet, View } from "react-native";
-import { ActivityIndicator, Text, Button, useTheme } from "react-native-paper";
+import {
+  ActivityIndicator,
+  Snackbar,
+  Text,
+  useTheme,
+} from "react-native-paper";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import DefaultWorkoutList from "@/components/DefaultWorkoutList";
@@ -10,16 +15,24 @@ import { ScheduleData } from "@/types/components/Schedule";
 import defaultSchedule from "@/constants/defaultSchedule";
 import Progress from "@/components/Progress";
 import { DefaultWorkoutPlan } from "@/types/components/DefaultWorkout";
-import { collection, disableNetwork, doc, getDocs, onSnapshot, query } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDocs,
+  onSnapshot,
+  query,
+} from "firebase/firestore";
 import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebase-config";
 import { Activity } from "@/types/states/Activity";
 import { ProgressData } from "@/types/components/Progress";
-import { WorkoutPlan } from "@/types/states/Plan";
 
 export default function HomeScreen() {
   const [schedule, setSchedule] = useState<ScheduleData>(defaultSchedule);
-  const [defaultWorkouts, setDefaultWorkouts] = useState<DefaultWorkoutPlan[]>();
-  const [dailyProgress, setDailyProgress] = useState<ProgressData | undefined>();
+  const [defaultWorkouts, setDefaultWorkouts] =
+    useState<DefaultWorkoutPlan[]>();
+  const [dailyProgress, setDailyProgress] = useState<
+    ProgressData | undefined
+  >();
 
   const [status, setStatus] = useState({
     isLoading: true,
@@ -89,20 +102,15 @@ export default function HomeScreen() {
         }
       } catch (error) {
         setStatus({ ...status, error: `FAILED FETCHING DATA: ${error}` });
-      } finally {
-        setStatus((prevStatus) => {
-          return { ...prevStatus, isLoading: false };
-        });
       }
     };
 
     const fetchWorkouts = async () => {
       try {
-
-        const workoutsRef = collection(FIREBASE_DB, 'defaultWorkouts');
+        const workoutsRef = collection(FIREBASE_DB, "defaultWorkouts");
         const workoutsQuery = query(workoutsRef);
         const workoutSnapshot = await getDocs(workoutsQuery);
-  
+
         const fetchedWorkouts = workoutSnapshot.docs.map((doc) => ({
           id: doc.id,
           title: doc.data().title,
@@ -110,41 +118,45 @@ export default function HomeScreen() {
           exerciseRest: doc.data().exerciseRest,
           difficulty: doc.data().difficulty,
           exercises: doc.data().exercises,
-          bannerURL: doc.data().bannerURL
+          bannerURL: doc.data().bannerURL,
         }));
-        
+
         setDefaultWorkouts(fetchedWorkouts);
       } catch (error) {
         setStatus({ ...status, error: `SOMETHING WENT WRONG: ${error}` });
-      } finally {
-        setStatus((prevStatus) => {
-          return { ...prevStatus, isLoading: false };
-        });
       }
     };
 
-    fetchUserSchedule();
-    fetchWorkouts();
+    const fetchUserSchedulePromise = new Promise((resolve, reject) => {
+      fetchUserSchedule().then(resolve).catch(reject);
+    });
+
+    const fetchWorkoutsPromise = new Promise((resolve, reject) => {
+      fetchWorkouts().then(resolve).catch(reject);
+    });
+
+    Promise.all([fetchUserSchedulePromise, fetchWorkoutsPromise]).finally(() =>
+      setStatus((prevStatus) => {
+        return { ...prevStatus, isLoading: false };
+      })
+    );
   }, []); // Empty dependency array ensures useEffect runs only once
 
-
-  const beginner = defaultWorkouts?.filter(workout => workout.difficulty === 1)
-  const intermediate = defaultWorkouts?.filter(workout => workout.difficulty === 2)
-  const advanced = defaultWorkouts?.filter(workout => workout.difficulty === 3)
+  const beginner = defaultWorkouts?.filter(
+    (workout) => workout.difficulty === 1
+  );
+  const intermediate = defaultWorkouts?.filter(
+    (workout) => workout.difficulty === 2
+  );
+  const advanced = defaultWorkouts?.filter(
+    (workout) => workout.difficulty === 3
+  );
 
   const renderContent = () => {
     if (status.isLoading) {
       return (
         <View style={styles.statusContainer}>
           <ActivityIndicator animating={true} size="large" />
-        </View>
-      );
-    }
-
-    if (status.error) {
-      return (
-        <View style={styles.statusContainer}>
-          <Text variant="headlineLarge">{status.error}</Text>
         </View>
       );
     }
@@ -236,6 +248,33 @@ export default function HomeScreen() {
       }}
     >
       {renderContent()}
+      <Snackbar
+        visible={status.error ? true : false}
+        onDismiss={() =>
+          setStatus((prevStatus) => {
+            return { ...prevStatus, error: "" };
+          })
+        }
+        style={{ backgroundColor: theme.colors.errorContainer }}
+        duration={3000}
+        action={{
+          label: "DISMISS",
+          labelStyle: {
+            color: theme.colors.onBackground,
+            fontFamily: "ProtestStrike",
+          },
+        }}
+      >
+        <Text
+          variant="titleMedium"
+          style={{
+            color: theme.colors.onErrorContainer,
+            fontFamily: "ProtestStrike",
+          }}
+        >
+          {status.error}
+        </Text>
+      </Snackbar>
     </View>
   );
 }

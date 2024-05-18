@@ -42,8 +42,8 @@ export default function ModalScreen() {
     confirmPassword: "",
     gender: "",
     dob: new Date(),
-    weight: "0",
-    height: "0",
+    weight: "",
+    height: "",
   });
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -653,7 +653,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   nameInput: {
-    flexGrow: 1,
+    width: "50%",
     backgroundColor: "transparent",
   },
   inputGroup: {
@@ -670,8 +670,9 @@ const styles = StyleSheet.create({
   halfContainer: {
     flexDirection: "column",
     alignItems: "center",
+    justifyContent: "space-between",
     gap: 5,
-    width: "45%",
+    width: "46%",
   },
   genderButtons: {
     borderRadius: 10,
